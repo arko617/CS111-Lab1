@@ -224,9 +224,20 @@ int isAndOrValid(const char* c)
   }
 
 
-int isParenthesesValid();
+int isParenthesesValid(const char* c)
+{
 
-int isCommentValid();
+}
+
+int isCommentValid(const char* c)
+{
+  //<operand># is invalid
+  if(isOrdinaryToken(c[0]) && c[1] == '#')
+    return 0;
+  //Any other condition is valid
+  return 1;
+}
+
 //TODO parentheses
 //TODO comments
 
