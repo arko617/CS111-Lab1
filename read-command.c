@@ -131,8 +131,11 @@ int isAndOrValid(const char* c)
     return 0;
   }
 
-//
-//Create functions first and 
+int isParenthesesValid();
+
+int isCommentValid();
+//TODO parentheses
+//TODO comments
 
 command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
