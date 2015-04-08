@@ -5,7 +5,6 @@
 
 #include <error.h>
 #include <ctype.h> //For isalpha() and isdigit() functions
-#include <string.h> //Put later
 #include <stdio.h> //For EOF
 
 /* FIXME: You may need to add #include directives, macro definitions,
@@ -13,11 +12,6 @@
 
 /* FIXME: Define the type 'struct command_stream' here.  This should
    complete the incomplete type declaration in command.h.  */
-typedef struct command_stream *command_stream_t;
-{
-  char c;
-  char* string;
-};
 
 int isOrdinaryToken(const char c)
 {
@@ -48,10 +42,97 @@ int isTwoDigitSpecialToken(const char c[2])
       if (c[1] == '|')
 	return 1;
     }
+  }
 
+  return 0;
+}
+
+//Check |, ;
+int isPipeOrSemicolonValid(const char* c)
+{
+  if(c[1] != EOF || c[2] != EOF)
+  {
+    if(!isOrdinaryToken(c[0]))
+      return 0;
+    else if(!isOrdinaryToken(c[2]))
+    {   
+      if(c[2] != '\n')
+	  return 0;
+
+      c += 3;
+      //Keep going until non-newline
+      while(*c != '\0')
+      {
+	if(isOrdinaryToken(*c))
+	  return 1;
+	else if(!isOrdinaryToken(*c) && *c != '\n')
+	  return 0;
+	c++;
+      }
+    }   
+  }   
+  return 0;
+}
+
+//Check && and ||
+int isAndOrValid(const char* c)
+{
+  if(c[1] != EOF || c[2] != EOF || c[3] != EOF)
+  {
+    if(isOrdinaryToken(c[0]))
+      return 0;
+    else if(isOrdinaryToken(c[3]))
+    {
+      if(c[3] != '\n')
+	return 0;
+
+      c += 4;
+      //Keep going until newline
+      while(*c != '\0')
+      {
+	if(isOrdinaryToken(*c))
+	  return 1;
+	else if(!isOrdinaryToken(*c) && *c != '\n')
+	  return 0;
+	c++;
+      }
+    }
+  }
+  return 0;
+}
+
+  //Check < or > 
+  int isIOValid(const char c[5], int* successiveIOCheck)
+  {
+    //int successiveIOCheck = 0;
+    if(c[1] != EOF || c[2] != EOF || c[3] != EOF || c[4] != EOF)
+    {
+      if(!isOrdinaryToken(c[0]))
+	return 0;
+
+      else if(!isOrdinaryToken(c[2]))
+	return 0;
+
+      else if(isOrdinaryToken(c[2]) && c[1] == '<')
+      {
+	if(c[4] == '<')
+	  return 0;
+	successiveIOCheck = 1;
+      }
+
+      else if(isOrdinaryToken(c[2]) && c[1] == '>')
+      {
+	if(c[4] == '<' || c[4] == '>')
+	  return 0;
+	successiveIOCheck = 1;
+      }
+      return 1;
+    }
     return 0;
   }
-}
+
+//
+//Create functions first and 
 
 command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
@@ -87,20 +168,6 @@ read_command_stream (command_stream_t s)
   //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
 
   //Make sure not to go out of bounds
-  for(i = 0; s.string[i] != '\0'; i++)
-  {
-    if(s.string[1] != EOF && s.string[2] != EOF)
-    {
-      //Operand before, < or >, operand after
-      if(isOrdinaryToken(s.string[0]) && (s.string[1] == '<' || s.string[1] ==
-					  '>') && isOrdinaryToken(s.string[2]))
-	return 1;
-      
-      else if(isOrdinaryToken(s.string[0]) && (s.string[1] == '|' || s.string[
-1] == "&&" || s.string[1] == "||")
-	      if(
-    }
-  }
 
   error (1, 0, "command reading not yet implemented");
   return 0;
