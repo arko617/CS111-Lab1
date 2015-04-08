@@ -245,13 +245,8 @@ struct command_stream {
 command_tree_t
 make_command_tree (char *c) {
   int i = 0;
-  while(c[i] != '\0'){
-    if(isWord()){
-      char c[100];
-      while(1){
-        break;
-      }
-    }
+  while(c[i] != '\n' && c[i+1] != '\n'){
+    break;
   }
 }
 
