@@ -142,7 +142,7 @@ int isOneDigitSpecialToken(const char c)
 	  c == '>');
 }
 
-int isTwoDigitSpecialToken(const char *c)
+int isTwoDigitSpecialToken(char *c)
 {
   removeWhiteSpace(c);
   //Make sure the array does not go out of bounds
@@ -165,7 +165,7 @@ int isTwoDigitSpecialToken(const char *c)
 }
 
 //Check |, ;
-int isPipeOrSemicolonValid(const char* c)
+int isPipeOrSemicolonValid(char* c)
 {
   removeWhiteSpace(c);
   if(c[1] != EOF || c[2] != EOF)
@@ -193,7 +193,7 @@ int isPipeOrSemicolonValid(const char* c)
 }
 
 //Check && and ||
-int isAndOrValid(const char* c)
+int isAndOrValid(char* c)
 {
   removeWhiteSpace(c);
   if(c[1] != EOF || c[2] != EOF || c[3] != EOF)
@@ -221,8 +221,9 @@ int isAndOrValid(const char* c)
 }
 
   //Check < or > 
-  int isIOValid(const char *c, int* successiveIOCheck)
+  int isIOValid(char *c, int* successiveIOCheck)
   {
+    removeWhiteSpace(c);
     if(c[1] != EOF || c[2] != EOF || c[3] != EOF || c[4] != EOF)
     {
       if(!isOrdinaryToken(c[0]))
@@ -250,8 +251,9 @@ int isAndOrValid(const char* c)
   }
 
 //Check ( and )
-int isParenthesesValid(const char* c)
+int isParenthesesValid(char* c)
 {
+  removeWhiteSpace(c);
   int open = 0;
   int close = 0;
 
@@ -270,8 +272,9 @@ int isParenthesesValid(const char* c)
 }
 
 //Check #
-int isCommentValid(const char* c)
+int isCommentValid(char* c)
 {
+  removeWhiteSpace(c);
   //<operand># is invalid
   if(isOrdinaryToken(c[0]) && c[1] == '#')
     return 0;
@@ -286,7 +289,7 @@ int isCommentValid(const char* c)
   //Characters keep going up to (but not including) the next newline
 }
 
-int isBufferValid(const char *c)
+int isBufferValid(char *c)
 {
   
   return 1;
