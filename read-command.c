@@ -105,10 +105,11 @@ void Stack_Command_Pop(Stack_Command *S)
         S->size--;
 }
 
+//GOOD!
 void removeWhiteSpace(char *c)
 {
   int i, curr;
-  char *temp, *tab;
+  char *temp, *tab, *first;
 
   //Replace tab characters with spaces
   for(i = 0, tab = c; tab[i] != '\0'; i++)
@@ -116,6 +117,15 @@ void removeWhiteSpace(char *c)
       if(tab[i] == '\t')
 	tab[i] = ' ';
     }
+
+ //First character must always be an operand
+  first = c;
+  while(first[0] == ' ') 
+    {
+      for(i = 0; first[i] != '\0'; i++)
+	  first[i] = first[i+1];
+    }
+
 
   for(i = 0; c[i] != '\0' ; i++)
     {
@@ -125,10 +135,12 @@ void removeWhiteSpace(char *c)
 	  //Move everything back one element if there is a space character
 	  for(curr = i, temp = c; temp[curr] != '\0'; curr++)
 	    temp[curr] = temp[curr+1];
-	}
+	} 
     }
 }
 
+//GOOD!
+//Checks one char at a time
 int isOrdinaryToken(const char c)
 {
   return (isalpha(c) || isdigit(c) || c == '!' || c == '%' || c == '+' || 
@@ -136,66 +148,136 @@ int isOrdinaryToken(const char c)
 	  || c == '^' || c == '_');
 }
 
+//GOOD!
 int isOneDigitSpecialToken(const char c)
 {
   return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || 
 	  c == '>');
 }
 
-int isTwoDigitSpecialToken(char *c)
-{
-  removeWhiteSpace(c);
+//GOOD!
+int isTwoDigitSpecialToken(const char *c)
+{ 
+  int i;
   //Make sure the array does not go out of bounds
-  if (c[1] != EOF)
-  { 
-    if (c[0] == '&')
-    {
-      if (c[1] == '&')
-	return 1;
-    }
+  for(i = 0; c[i] != '\0'; i++)
+  {
+    if (c[i+1] != EOF)
+      { 
+	if (c[i] == '&')
+	  {
+	    if (c[i+1] == '&')
+	      return 1;
+	  }
 
-    else if (c[0] == '|')
-    {
-      if (c[1] == '|')
-	return 1;
-    }
+	else if (c[i] == '|')
+	  {
+	    if (c[i+1] == '|')
+	      return 1;
+	  }
+      }
   }
 
   return 0;
 }
 
-//Check |, ;
-int isPipeOrSemicolonValid(char* c)
+char* getSimpleCommand(const char* c, int start, int* end)
 {
-  removeWhiteSpace(c);
-  if(c[1] != EOF || c[2] != EOF)
-  {
-    if(!isOrdinaryToken(c[0]))
-      return 0;
-    else if(!isOrdinaryToken(c[2]))
-    {   
-      if(c[2] != '\n')
-	return 0;
+  int i=0, length = 0;
+  while(c[start+i] != '\0')
+    {
+      if(!isOrdinaryToken(c[start+i]) && c[start+i] != ' ' && c[start+i] != 
+	 '\n')
+	{
+	  end = start+i;
+	  break;
+	}
+      i++;
+    }
 
-      c += 3;
-      //Keep going until non-newline
-      while(*c != '\0')
-      {
-	if(isOrdinaryToken(*c))
-	  return 1;
-	else if(!isOrdinaryToken(*c) && *c != '\n')
-	  return 0;
-	c++;
-      }
-    }   
-  }   
-  return 0;
+  length = end - start;
+  char* simpleCommand = (char* ) malloc(length * sizeof(char));
+  int j = start;
+  while(j < end)
+    {
+      simpleCommand += c[j];
+      j++;
+    }
+
+  return simpleCommand;
 }
 
-//Check && and ||
-int isAndOrValid(char* c)
+int size(char *c)
 {
-  removeWhiteSpace(c);
+  int i, size = 0;
+  for(i=0; c[i] != '\0'; i++)
+    size++;
+  return size;
+}
+
+//Checks entire string to be parsed
+//Check | ; && ||
+int isSimpleCommandValid(const char* c)
+{
+  int i=0, length, newlineIter;
+  char* curr = c; //Current position of c
+  char* simpleCommandTemp; //Store temporary simple command
+
+  int end; //We always know the start based on current position but not the end
+
+  while(c[i] != '\0')
+    {
+      simpleCommandTemp = getSimpleCommand(c, i, &end);
+      length = size(simpleCommandTemp);
+
+      //Check to make sure that there is an operand to match
+      if(!isTwoDigitSpecialToken(c[i+length+2]))
+	{
+	  if(!isOneDigitSpecialToken(c[i+length+2]))
+	    return 0;
+	}
+
+      
+    }
+
+  return 1;
+}
+/*int isPipeOrSemicolonValid(const char* c)
+{
+  int i;
+
+  for(i=0; c[i] != '\0'; i++)
+    {
+      //Make sure to stay in the boundaries
+      if(c[i+1] != EOF || c[i+2] != EOF)
+	{
+	  if(!isOrdinaryToken(c[i]))
+	    return 0;
+	  else if(!isOrdinaryToken(c[i+2]))
+	    {   
+	      if(c[i+2] != '\n')
+		return 0;
+
+	      c += 3;
+
+	      //Keep going until non-newline
+	      while(*c != '\0')
+		{
+		  if(isOrdinaryToken(*c))
+		    return 1;
+		  else if(!isOrdinaryToken(*c) && *c != '\n')
+		    return 0;
+		  c++;
+		}
+	    }   
+	}
+    }   
+  return 0;
+  }*/
+
+//Check && and ||
+int isAndOrValid(const char* c)
+{ 
   if(c[1] != EOF || c[2] != EOF || c[3] != EOF)
   {
     if(isOrdinaryToken(c[0]))
@@ -221,9 +303,8 @@ int isAndOrValid(char* c)
 }
 
   //Check < or > 
-  int isIOValid(char *c, int* successiveIOCheck)
+  int isIOValid(const char *c, int* successiveIOCheck)
   {
-    removeWhiteSpace(c);
     if(c[1] != EOF || c[2] != EOF || c[3] != EOF || c[4] != EOF)
     {
       if(!isOrdinaryToken(c[0]))
@@ -251,9 +332,8 @@ int isAndOrValid(char* c)
   }
 
 //Check ( and )
-int isParenthesesValid(char* c)
+int isParenthesesValid(const char* c)
 {
-  removeWhiteSpace(c);
   int open = 0;
   int close = 0;
 
@@ -272,9 +352,8 @@ int isParenthesesValid(char* c)
 }
 
 //Check #
-int isCommentValid(char* c)
+int isCommentValid(const char* c)
 {
-  removeWhiteSpace(c);
   //<operand># is invalid
   if(isOrdinaryToken(c[0]) && c[1] == '#')
     return 0;
@@ -291,7 +370,10 @@ int isCommentValid(char* c)
 
 int isBufferValid(char *c)
 {
+  //Make it easier to parse by removing extraneous white space
+  removeWhiteSpace(c); 
   
+  //Run checks
   return 1;
 }
 
