@@ -107,24 +107,24 @@ void Stack_Command_Pop(Stack_Command *S)
 
 void removeWhiteSpace(char *c)
 {
-  int i, curr;
-  char *temp, *tab;
+    int i, curr;
+    char *temp, *tab;
+    
+    //Replace tab characters with spaces
+      for(tab = c; *tab != '\0'; tab++)
+      {
+	  if(*tab == '\t')
+	    *tab = ' ';
+      }
 
-  //Replace tab characters with spaces
-  for(tab = c; *tab != '\0'; tab++)
+    for(i = 0; *c != '\0' ; i++, c++)
     {
-      if(*tab == '\t')
-	*tab = ' ';
-    }
-
-  for(i = 0; c[i] != '\0' ; i++)
-    {
-      //Remove white spaces if more than one space
-      while (c[i] == ' ' && c[i+1] == ' ')
+        //Remove white spaces if more than one space
+        while (*c == ' ' && *(c+1) == ' ')
 	{
 	  //Move everything back one element if there is a space character
-	  for(curr = i, temp = c; temp[curr] != '\0'; curr++)
-	    temp[curr] = temp[curr+1];
+	    for(curr = i, temp = c; *temp != '\0'; temp++, curr++)
+	      c[curr] = c[curr+1];
 	}
     }
 }
