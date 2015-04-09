@@ -111,10 +111,10 @@ void removeWhiteSpace(char *c)
   char *temp, *tab;
 
   //Replace tab characters with spaces
-  for(tab = c; *tab != '\0'; tab++)
+  for(i = 0, tab = c; tab[i] != '\0'; i++)
     {
-      if(*tab == '\t')
-	*tab = ' ';
+      if(tab[i] == '\t')
+	tab[i] = ' ';
     }
 
   for(i = 0; c[i] != '\0' ; i++)
