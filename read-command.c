@@ -104,21 +104,36 @@ void Stack_Command_Pop(Stack_Command *S)
         S->size--;
 }
 
-
-int isOrdinaryToken(const char c)
+void removeWhiteSpace(char *c)
 {
-  return (isalpha(c) || isdigit(c) || c == '!' || c == '%' || c == '+' || c ==
-    ',' || c == '-' || c == '.' || c == '/' || c == ':' || c == '@' || c
-    == '^' || c == '_');
+    int i, curr;
+    char *temp;
+
+    for(i = 0; *c != '\0' ; i++, c++)
+    {
+      if ((*c == ' ' && *(c+1) == ' ') || *c == '\t')
+	{
+	  //Move everything back one element if there is a space character
+	    for(curr = i, temp = c; *temp != '\0'; temp++, curr++)
+	      c[curr] = c[curr+1];
+	}
+    }
 }
 
-int isOneDigitSpecialToken(const char c)
+int isOrdinaryToken(const char *c)
 {
-  return (c == ";" || c == "|" || c == "(" || c == ")" || c == "<" || 
-    c == ">");
+  return (isalpha(*c) || isdigit(*c) || *c == '!' || *c == '%' || *c == '+' ||
+	  *c == ',' || *c == '-' || *c == '.' || *c == '/' || *c == ':' || *c 
+	  == '@' || *c == '^' || *c == '_');
 }
 
-int isTwoDigitSpecialToken(const char c[2])
+int isOneDigitSpecialToken(const char *c)
+{
+  return (*c == ';' || *c == '|' || *c == '(' || *c == ')' || *c == '<' || 
+	  *c == '>');
+}
+
+int isTwoDigitSpecialToken(const char *c)
 {
   //Make sure the array does not go out of bounds
   if (c[1] != EOF)
@@ -194,52 +209,70 @@ int isAndOrValid(const char* c)
 }
 
   //Check < or > 
-  int isIOValid(const char c[5], int* successiveIOCheck)
+  int isIOValid(const char *c, int* successiveIOCheck)
   {
-    //int successiveIOCheck = 0;
     if(c[1] != EOF || c[2] != EOF || c[3] != EOF || c[4] != EOF)
     {
       if(!isOrdinaryToken(c[0]))
-  return 0;
+	return 0;
 
       else if(!isOrdinaryToken(c[2]))
-  return 0;
+	return 0;
 
       else if(isOrdinaryToken(c[2]) && c[1] == '<')
       {
-  if(c[4] == '<')
-    return 0;
-  successiveIOCheck = 1;
+	if(c[4] == '<')
+	  return 0;
+	*successiveIOCheck = 1;
       }
 
       else if(isOrdinaryToken(c[2]) && c[1] == '>')
       {
-  if(c[4] == '<' || c[4] == '>')
-    return 0;
-  successiveIOCheck = 1;
+	if(c[4] == '<' || c[4] == '>')
+	  return 0;
+	*successiveIOCheck = 1;
       }
       return 1;
     }
     return 0;
   }
 
-
+//Check ( and )
 int isParenthesesValid(const char* c)
 {
+  int open = 0;
+  int close = 0;
 
+  //Make sure number of open and closed parentheses are equal
+  while(*c != '\0')
+  {
+    if(*c == '(')
+      open++;
+    else if(*c == ')')
+      close++;
+  }
+
+  if(open == close)
+    return 1;
+  return 0;
 }
 
+//Check #
 int isCommentValid(const char* c)
 {
   //<operand># is invalid
   if(isOrdinaryToken(c[0]) && c[1] == '#')
     return 0;
   //Any other condition is valid
+  while(*c != '\0')
+    {
+      if(*c == '\n')
+	return 1;
+      c++;
+    }
   return 1;
+  //Characters keep going up to (but not including) the next newline
 }
-
-//TODO parentheses
-//TODO comments
 
 struct command_tree {
   command_t *root;
@@ -291,7 +324,7 @@ read_command_stream (command_stream_t s)
   /* FIXME: Replace this with your implementation too.  */
   //  if (s.make_command_stream(!isWord(
   
-  int i;
+  //int i;
   //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
 
   //Make sure not to go out of bounds
