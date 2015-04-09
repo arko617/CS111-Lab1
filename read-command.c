@@ -1,5 +1,6 @@
 // UCLA CS 111 Lab 1 command reading
 
+
 #include "command.h"
 #include "command-internals.h"
 #include "alloc.h"
@@ -120,17 +121,17 @@ void removeWhiteSpace(char *c)
     }
 }
 
-int isOrdinaryToken(const char *c)
+int isOrdinaryToken(const char c)
 {
-  return (isalpha(*c) || isdigit(*c) || *c == '!' || *c == '%' || *c == '+' ||
-	  *c == ',' || *c == '-' || *c == '.' || *c == '/' || *c == ':' || *c 
-	  == '@' || *c == '^' || *c == '_');
+  return (isalpha(c) || isdigit(c) || c == '!' || c == '%' || c == '+' || 
+	  c == ',' || c == '-' || c == '.' || c == '/' || c == ':' || c == '@'
+	  || c == '^' || c == '_');
 }
 
-int isOneDigitSpecialToken(const char *c)
+int isOneDigitSpecialToken(const char c)
 {
-  return (*c == ';' || *c == '|' || *c == '(' || *c == ')' || *c == '<' || 
-	  *c == '>');
+  return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || 
+	  c == '>');
 }
 
 int isTwoDigitSpecialToken(const char *c)
