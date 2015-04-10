@@ -105,7 +105,7 @@ void Stack_Command_Pop(Stack_Command *S)
         S->size--;
 }
 
-//GOOD!
+//PERFECT!
 void removeWhiteSpace(char *c)
 {
   int i, curr;
@@ -139,7 +139,7 @@ void removeWhiteSpace(char *c)
     }
 }
 
-//GOOD!
+//PERFECT!
 //Checks one char at a time
 int isOrdinaryToken(const char c)
 {
@@ -149,231 +149,148 @@ int isOrdinaryToken(const char c)
 }
 
 //GOOD!
-int isOneDigitSpecialToken(const char c)
+int isSpecialToken(const char c)
 {
   return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || 
-	  c == '>');
+	  c == '>' || c == '&');
 }
 
-//GOOD!
-int isTwoDigitSpecialToken(const char *c)
-{ 
-  int i;
-  //Make sure the array does not go out of bounds
-  for(i = 0; c[i] != '\0'; i++)
-  {
-    if (c[i+1] != EOF)
-      { 
-	if (c[i] == '&')
-	  {
-	    if (c[i+1] == '&')
-	      return 1;
-	  }
-
-	else if (c[i] == '|')
-	  {
-	    if (c[i+1] == '|')
-	      return 1;
-	  }
-      }
-  }
-
-  return 0;
-}
-
-char* getSimpleCommand(const char* c, int start, int* end)
+//Check entire buffer
+int isValid(char *c)
 {
-  int i=0, length = 0;
-  while(c[start+i] != '\0')
-    {
-      if(!isOrdinaryToken(c[start+i]) && c[start+i] != ' ' && c[start+i] != 
-	 '\n')
-	{
-	  end = start+i;
-	  break;
-	}
-      i++;
-    }
+  int i = 0, sub; //iterators for first while loop
+  int par = 0; //iterators for second while loop
+  int andOr = 0; //boolean to see if it is an "and-or"
+  int leftPar = 0, rightPar = 0; //counters for "parentheses"
+  
+  //Make it easier to parse by removing extraneous white space
+  removeWhiteSpace(c);
 
-  length = end - start;
-  char* simpleCommand = (char* ) malloc(length * sizeof(char));
-  int j = start;
-  while(j < end)
-    {
-      simpleCommand += c[j];
-      j++;
-    }
-
-  return simpleCommand;
-}
-
-int size(char *c)
-{
-  int i, size = 0;
-  for(i=0; c[i] != '\0'; i++)
-    size++;
-  return size;
-}
-
-//Checks entire string to be parsed
-//Check | ; && ||
-int isSimpleCommandValid(const char* c)
-{
-  int i=0, length, newlineIter;
-  char* curr = c; //Current position of c
-  char* simpleCommandTemp; //Store temporary simple command
-
-  int end; //We always know the start based on current position but not the end
-
+  //First character must NOT be a special token
+  if(isSpecialToken(c[i]))
+    return 0;
+  
+  //Assume true until proven false
+  //Check all operators except parentheses (done after this while loop)
   while(c[i] != '\0')
     {
-      simpleCommandTemp = getSimpleCommand(c, i, &end);
-      length = size(simpleCommandTemp);
+      andOr = 0;
+      sub = i; //To perform subchecks without modifying the "i" iterator
+      //Check that the token is valid input
 
-      //Check to make sure that there is an operand to match
-      if(!isTwoDigitSpecialToken(c[i+length+2]))
-	{
-	  if(!isOneDigitSpecialToken(c[i+length+2]))
-	    return 0;
-	}
-
+      if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n')
+	return 0;
       
-    }
-
-  return 1;
-}
-/*int isPipeOrSemicolonValid(const char* c)
-{
-  int i;
-
-  for(i=0; c[i] != '\0'; i++)
-    {
-      //Make sure to stay in the boundaries
-      if(c[i+1] != EOF || c[i+2] != EOF)
+      //Check that < and > have valid tokens on either side
+      else if(c[i] == '<' || c[i] == '>')
 	{
-	  if(!isOrdinaryToken(c[i]))
+	  while(c[sub-1] == ' ')
+	    sub--;
+	  //If previous token is special or newline, error
+	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
 	    return 0;
-	  else if(!isOrdinaryToken(c[i+2]))
-	    {   
-	      if(c[i+2] != '\n')
-		return 0;
-
-	      c += 3;
-
-	      //Keep going until non-newline
-	      while(*c != '\0')
-		{
-		  if(isOrdinaryToken(*c))
-		    return 1;
-		  else if(!isOrdinaryToken(*c) && *c != '\n')
-		    return 0;
-		  c++;
-		}
-	    }   
+	  sub = i; //Reset sub
+	  while(c[sub+1] == '\n' || c[sub+1] == ' ')
+	    sub++;
+	  //If next token is special or blank, error
+	  if(!isOrdinaryToken(c[sub+1]))
+	    return 0;
 	}
-    }   
-  return 0;
-  }*/
 
-//Check && and ||
-int isAndOrValid(const char* c)
-{ 
-  if(c[1] != EOF || c[2] != EOF || c[3] != EOF)
-  {
-    if(isOrdinaryToken(c[0]))
-      return 0;
-    else if(isOrdinaryToken(c[3]))
-    {
-      if(c[3] != '\n')
-  return 0;
+      //Check that ; has valid tokens on AT LEAST the left side
+      else if(c[i] == ';')
+	{
+	  while(c[sub-1] == ' ')
+	    sub--;
+	  //if previous token is special or newline, error
+	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+	    return 0;
 
-      c += 4;
-      //Keep going until newline
-      while(*c != '\0')
-      {
-	if(isOrdinaryToken(*c))
-	  return 1;
-	else if(!isOrdinaryToken(*c) && *c != '\n')
-	  return 0;
-	c++;
-      }
-    }
-  }
-  return 0;
-}
+	  sub = i; //Reset sub
 
-  //Check < or > 
-  int isIOValid(const char *c, int* successiveIOCheck)
-  {
-    if(c[1] != EOF || c[2] != EOF || c[3] != EOF || c[4] != EOF)
-    {
-      if(!isOrdinaryToken(c[0]))
+	  //If next non-space or non-newline is an operator, error
+
+	  while(c[sub+1] == '\n' || c[sub+1] == ' ')
+	    sub++;
+	  if(isSpecialToken(c[sub+1]))
+	    return 0;
+	}
+
+      //Check that | has valid tokens on AT LEAST the left side
+      else if(c[i] == '|')
+	{
+	  while(c[sub-1] == ' ')
+	    sub--;
+
+	  //if previous token is special or newline, error
+	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))//WHY THE FUCK IS THIS WRONG?::::::::: \n|\n
+	    return 0;
+	  sub = i; //Reset sub
+
+	  //If next non-space or non-newline is an operator or blank, error
+	  while(c[sub+1] == '\n' || c[sub+1] == ' ')
+	    sub++;
+
+	  //Take into account that it could be ||
+	  if(!isOrdinaryToken(c[sub+1]) && c[sub+1] != '|')
+	    return 0;
+	}
+
+      //Check and-ors
+      else if(c[i] == '|' && (c[i+1] != '|' || isOrdinaryToken(c[i+1]) || c[i+1] != ' ' || c[i+1] != '\n'))
 	return 0;
 
-      else if(!isOrdinaryToken(c[2]))
+      else if(c[i] == '&' && c[i+1] != '&')
 	return 0;
 
-      else if(isOrdinaryToken(c[2]) && c[1] == '<')
-      {
-	if(c[4] == '<')
-	  return 0;
-	*successiveIOCheck = 1;
-      }
+      //Check that and-ors have an appropriate lhs and rhs
+      if((c[i] == '&' && c[i+1] == '&') || (c[i] == '|' && c[i+1] == '|'))
+	{
+	  andOr = 1;
 
-      else if(isOrdinaryToken(c[2]) && c[1] == '>')
-      {
-	if(c[4] == '<' || c[4] == '>')
-	  return 0;
-	*successiveIOCheck = 1;
-      }
-      return 1;
+	  while(c[sub-1] == ' ')
+	    sub--;
+
+	  //If the previous token is a newline or a special token, error
+	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+	    return 0;
+
+	  sub = i; //Reset sub
+
+	  //Jump an extra element because the special operator is 2 digits
+	  //If next non-space or non-newline is an operator, error
+	  while(c[sub+2] == '\n' || c[sub+2] == ' ')
+	    sub++;
+
+	  //If the next token is a special token or blank, error
+	  if(!isOrdinaryToken(c[sub+2])) 
+	    return 0; 
+	}
+
+      if(andOr)
+	i += 2;
+
+      else
+	i++;
     }
-    return 0;
-  }
 
-//Check ( and )
-int isParenthesesValid(const char* c)
-{
-  int open = 0;
-  int close = 0;
-
-  //Make sure number of open and closed parentheses are equal
-  while(*c != '\0')
-  {
-    if(*c == '(')
-      open++;
-    else if(*c == ')')
-      close++;
-  }
-
-  if(open == close)
-    return 1;
-  return 0;
-}
-
-//Check #
-int isCommentValid(const char* c)
-{
-  //<operand># is invalid
-  if(isOrdinaryToken(c[0]) && c[1] == '#')
-    return 0;
-  //Any other condition is valid
-  while(*c != '\0')
+  while(c[par] != '\0')
     {
-      if(*c == '\n')
-	return 1;
-      c++;
-    }
-  return 1;
-  //Characters keep going up to (but not including) the next newline
-}
+      if(c[par] == '(')
+	leftPar++;
 
-int isBufferValid(char *c)
-{
-  //Make it easier to parse by removing extraneous white space
-  removeWhiteSpace(c); 
-  
-  //Run checks
+      else if(c[par] == ')')
+	rightPar++;
+
+      par++;
+
+    }
+
+  //If different number of left and right parentheses, error
+
+  if(leftPar != rightPar)
+    return 0;
+
   return 1;
 }
 
