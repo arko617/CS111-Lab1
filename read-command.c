@@ -1,6 +1,5 @@
 // UCLA CS 111 Lab 1 command reading
 
-
 #include "command.h"
 #include "command-internals.h"
 #include "alloc.h"
@@ -65,7 +64,6 @@ void Stack_Pop(struct Stack *S)
         S->size--;
 }
 
-//PERFECT!
 void removeWhiteSpace(char *c)
 {
     int i, curr;
@@ -80,7 +78,7 @@ void removeWhiteSpace(char *c)
 
     //First character must always be an operand
     first = c;
-    while(first[0] == ' ') 
+    while(first[0] == ' ' || first[0] == '\n') 
     {
         for(i = 0; first[i] != '\0'; i++)
 	         first[i] = first[i+1];
@@ -99,7 +97,6 @@ void removeWhiteSpace(char *c)
     }
 }
 
-//PERFECT!
 //Checks one char at a time
 int isOrdinaryToken(const char c)
 {
@@ -107,7 +104,6 @@ int isOrdinaryToken(const char c)
             || c == '@' || c == '^' || c == '_');
 }
 
-//GOOD!
 int isSpecialToken(const char c)
 {
   return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || 
@@ -618,9 +614,8 @@ command_t
 read_command_stream (command_stream_t s)
 {
   /* FIXME: Replace this with your implementation too.  */
-  //  if (s.make_command_stream(!isWord(
-  
-  //int i;
+ 
+  s. 
   //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
 
   //Make sure not to go out of bounds
