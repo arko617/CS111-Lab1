@@ -251,12 +251,13 @@ typedef struct command_tree *command_tree_t;
 
 struct command_tree {
   command_t root;
-  command_t next;
-  command_t prev;
+  command_tree_t next;
+  command_tree_t prev;
 };
 
 
 struct command_stream {
+  int valid;
   command_tree_t head;
   command_tree_t current;
   command_tree_t tail;
@@ -591,6 +592,7 @@ make_command_stream (int (*get_next_byte) (void *),
       stream->head = NULL;
       stream->current = NULL;
       stream->tail = NULL;
+      stream->valid = 0;
 
       count = 0;
 
@@ -621,6 +623,7 @@ make_command_stream (int (*get_next_byte) (void *),
             printf("New command tree created");
             
             if(stream->head == NULL){
+              stream->valid = 1;
               stream->head = tree;
               stream->current = stream->head;
               stream->tail = stream->head;
