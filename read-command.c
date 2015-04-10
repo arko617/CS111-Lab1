@@ -80,7 +80,7 @@ void removeWhiteSpace(char *c)
 
     //First character must always be an operand
     first = c;
-    while(first[0] == ' ') 
+    while(first[0] == ' ' || first[0] == '\n') 
     {
         for(i = 0; first[i] != '\0'; i++)
 	         first[i] = first[i+1];
@@ -261,8 +261,8 @@ struct command_tree {
 
 
 struct command_stream {
-  command_tree_t current;
   command_tree_t head;
+  command_tree_t current;
   command_tree_t tail;
 };
 
@@ -589,28 +589,63 @@ make_command_stream (int (*get_next_byte) (void *),
         return 0;
       }
 
-      count = 0;
-      while(buffer[count] != '\0'){
-
-      }
-
-      command_tree_t tree;
-      tree = make_command_tree(buffer);
-
-
       struct command_stream s;
       command_stream_t stream;
       stream = &s;
+      stream->head = NULL;
+      stream->current = NULL;
+      stream->tail = NULL;
 
-  //Command trees are separated by 2 or more newlines
-  if(get_next_byte_argument == '\n' && get_next_byte(get_next_byte_argument) == '\n')
-    {
-      printf("New command tree created");
-      return -69;
-    }
+      count = 0;
 
-  error (1, 0, "command reading not yet implemented");
-  return 0;
+      while(buffer[count] != '\0'){
+
+        char *temp_buffer = (char*) malloc(sizeof(char) * size);
+        int len = 0;
+
+        while(buffer[count] != '\n' && buffer[count+1] != '\n' && buffer[count] != '\0'){ 
+          temp_buffer[len] = buffer[count];
+          len++;
+          count++;
+        }
+
+        //Command trees are separated by 2 or more newlines
+        if((buffer[count] == '\n' && buffer[count+1] == '\n') || buffer[count] == '\0'){
+            temp_buffer[len] = '\0';
+
+            while(buffer[count] == '\n'){
+              count++;
+            }
+
+            command_tree_t tree;
+            tree->next = NULL;
+            tree->prev = NULL;
+            tree = make_command_tree(temp_buffer);
+            printf("New command tree created");
+            
+            if(stream->head == NULL){
+              stream->head = tree;
+              stream->current = stream->head;
+              stream->tail = stream->head;
+
+              stream->head->prev = NULL;
+              stream->head->next = NULL;
+            }
+
+            else{
+              stream->current = tree;
+              stream->tail->next = stream->current;
+              stream->current->prev = stream->tail;
+              stream->current->next = NULL;
+              stream->tail = stream->current;
+              stream->current = stream->head;
+            }
+
+        }
+
+      }
+
+    return stream;
 }
 
 
