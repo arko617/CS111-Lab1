@@ -2,36 +2,36 @@
 
 # UCLA CS 111 Lab 1 - Test that valid syntax is processed correctly.
 
-#tmp=$0-$$.tmp
-#mkdir "$tmp" || exit
+tmp=$0-$$.tmp
+mkdir "$tmp" || exit
 
-#(
-#cd "$tmp" || exit
+(
+cd "$tmp" || exit
 
-#cat >test.sh <<'EOF'
-#true
+cat >test.sh <<'EOF'
+true
 
-#g++ -c foo.c
+g++ -c foo.c
 
-#: : :
+: : :
 
 cat < /etc/passwd | tr a-z A-Z | sort -u || echo sort failed!
 
 a b<c > d
 
-#cat < /etc/passwd | tr a-z A-Z | sort -u > out || echo sort failed!
+cat < /etc/passwd | tr a-z A-Z | sort -u > out || echo sort failed!
 
-#a&&b||
-# c &&
- # d | e && f|
+a&&b||
+ c &&
+  d | e && f|
 
-#g<h
+g<h
 
 # This is a weird example: nobody would ever want to run this.
-#a<b>c|d<e>f|g<h>i
-#EOF
+a<b>c|d<e>f|g<h>i
+EOF
 
-#cat >test.exp <<'EOF'
+cat >test.exp <<'EOF'
 # 1
   true
 # 2
@@ -85,7 +85,7 @@ test ! -s test.err || {
   cat test.err
   exit 1
 }
-#
+
 ) || exit
 
 rm -fr "$tmp"
