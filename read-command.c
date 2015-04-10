@@ -251,6 +251,7 @@ int isValid(char *c)
   return 1;
 }
 
+typedef struct command_tree *command_tree_t;
 
 struct command_tree {
   command_t root;
@@ -539,10 +540,67 @@ make_command_stream (int (*get_next_byte) (void *),
      add auxiliary functions and otherwise modify the source code.
      You can also use external functions defined in the GNU C Library.  */
 
- //Produce a linked list of command trees, used as input to read_command_stream
+    //Produce a linked list of command trees, used as input to read_command_stream
+    //Precedence from lowest to highest: ';' < '&&' == '||' < '|'
 
-  //Precedence from lowest to highest: ';' < '&&' == '||' < '|'
+      int size = 2000;  //Arbitrary initial size
+      char *buffer = (char*) malloc(sizeof(char) * size); //Dynamically allocated array
+      char c; //Input character
+      int empty = 1;//Boolean used to check whether the file is empty
+      int count = 0;//Counter used for indexing in my dynamically allocated array
   
+      if (buffer == NULL) //Returns an error if buffer is NULL
+      {
+        fprintf(stderr, "Error when using 'buffer' malloc.");
+        exit(1);
+      }
+
+      c = get_next_byte(get_next_byte_argument);
+
+      while(c != EOF)
+      {
+        empty = 0;  //We input something into the file
+        buffer[count] = c;
+        count++;
+
+        //Reallocate the size if necessary
+        if(count >= size)
+        {
+          buffer = (char*)realloc(buffer, size*2);
+
+          if(buffer == NULL)
+          {
+            fprintf(stderr, "Error when using 'buffer' malloc.");
+            exit(1);   
+          }
+
+          size *= 2;//Adjust size for future reallocations
+        }
+
+        c = get_next_byte(get_next_byte_argument);
+      }
+
+      buffer[count] = '\0';
+
+      removeWhiteSpace(buffer);
+      
+      if(!isValid(buffer)){
+        fprintf(stderr, "Buffer is invalid");
+        return 0;
+      }
+
+      count = 0;
+      while(buffer[count] != '\0'){
+
+      }
+
+      command_tree_t tree;
+      tree = make_command_tree(buffer);
+
+
+      struct command_stream s;
+      command_stream_t stream;
+      stream = &s;
 
   //Command trees are separated by 2 or more newlines
   if(get_next_byte_argument == '\n' && get_next_byte(get_next_byte_argument) == '\n')
