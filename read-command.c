@@ -618,6 +618,7 @@ make_command_stream (int (*get_next_byte) (void *),
             }
 
             command_tree_t tree;
+            tree->root = NULL;
             tree->next = NULL;
             tree->prev = NULL;
             tree = make_command_tree(temp_buffer);
