@@ -68,34 +68,34 @@ void Stack_Pop(struct Stack *S)
 //GOOD!
 void removeWhiteSpace(char *c)
 {
-  int i, curr;
-  char *temp, *tab, *first;
+    int i, curr;
+    char *temp, *tab, *first;
 
-  //Replace tab characters with spaces
-  for(i = 0, tab = c; tab[i] != '\0'; i++)
+    //Replace tab characters with spaces
+    for(i = 0, tab = c; tab[i] != '\0'; i++)
     {
-      if(tab[i] == '\t')
-	tab[i] = ' ';
+        if(tab[i] == '\t')
+    	    tab[i] = ' ';
     }
 
- //First character must always be an operand
-  first = c;
-  while(first[0] == ' ') 
+    //First character must always be an operand
+    first = c;
+    while(first[0] == ' ') 
     {
-      for(i = 0; first[i] != '\0'; i++)
-	  first[i] = first[i+1];
+        for(i = 0; first[i] != '\0'; i++)
+	         first[i] = first[i+1];
     }
 
 
-  for(i = 0; c[i] != '\0' ; i++)
+    for(i = 0; c[i] != '\0' ; i++)
     {
-      //Remove white spaces if more than one space
-      while (c[i] == ' ' && c[i+1] == ' ')
-	{
-	  //Move everything back one element if there is a space character
-	  for(curr = i, temp = c; temp[curr] != '\0'; curr++)
-	    temp[curr] = temp[curr+1];
-	} 
+        //Remove white spaces if more than one space
+        while (c[i] == ' ' && c[i+1] == ' ')
+	     {
+	         //Move everything back one element if there is a space character
+	         for(curr = i, temp = c; temp[curr] != '\0'; curr++)
+	           temp[curr] = temp[curr+1];
+	     } 
     }
 }
 
@@ -103,16 +103,14 @@ void removeWhiteSpace(char *c)
 //Checks one char at a time
 int isOrdinaryToken(const char c)
 {
-  return (isalpha(c) || isdigit(c) || c == '!' || c == '%' || c == '+' || 
-	  c == ',' || c == '-' || c == '.' || c == '/' || c == ':' || c == '@'
-	  || c == '^' || c == '_');
+    return (isalpha(c) || isdigit(c) || c == '!' || c == '%' || c == '+' || c == ',' || c == '-' || c == '.' || c == '/' || c == ':' 
+            || c == '@' || c == '^' || c == '_');
 }
 
 //GOOD!
 int isSpecialToken(const char c)
 {
-  return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || 
-	  c == '>' || c == '&');
+  return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || c == '>' || c == '&');
 }
 
 int isValid(char *c)
@@ -120,7 +118,127 @@ int isValid(char *c)
   //Make it easier to parse by removing extraneous white space
   removeWhiteSpace(c); 
   
-  //Run checks
+  int i = 0, sub; //iterators for first while loop
+  int par = 0;  //iterators for second while loop
+  int andOr = 0;  //boolean to see if it is an "and-or"
+  int leftPar = 0, rightPar = 0;  //counters for "parentheses"
+
+  //First character must NOT be a special token
+  //Take parentheses into account later
+  if(isSpecialToken(c[i]))
+    return 0; 
+
+  //Assume true until proven false
+  //Check all operators except parentheses (done after this while loop)
+  while(c[i] != '\0')
+  {
+      sub = i; //To perform subchecks without modifying the "i" iterator
+
+      //Check that the token is valid input
+      if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n')
+        return 0;
+
+      //Check that < and > have valid tokens on either side
+      else if(c[i] == '<' || c[i] == '>')
+      {
+        while(c[sub-1] == ' ')
+          sub--;
+        //If previous token is special or newline, error
+        if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+          return 0;
+
+        sub = i;  //Reset sub
+
+        while(c[sub+1] == '\n' || c[sub+1] == ' ')
+            sub++;
+        //If next token is special or blank, error
+        if(!isOrdinaryToken(c[sub+1]))
+          return 0;
+      }
+
+      //Check that ; has valid tokens on AT LEAST the left side
+      else if(c[i] == ';')
+      {
+        while(c[sub-1] == ' ')
+          sub--;
+        //if previous token is special or newline, error
+        if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+          return 0;
+        
+        sub = i;  //Reset sub
+
+        //If next non-space or non-newline is an operator, error
+        while(c[sub+1] == '\n' || c[sub+1] == ' ')
+          sub++;
+        if(isSpecialToken(c[sub+1]))
+          return 0;
+      }      
+
+
+      //Check that | has valid tokens on AT LEAST the left side
+      else if(c[i] == '|')
+      {
+        while(c[sub-1] == ' ')
+          sub--;
+        //if previous token is special or newline, error
+        if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+          return 0;
+        
+        sub = i;  //Reset sub
+
+        //If next non-space or non-newline is an operator or blank, error
+        while(c[sub+1] == '\n' || c[sub+1] == ' ')
+          sub++;
+        //Take into account that it could be ||
+        if(!isordinaryToken(c[sub+1]) && c[sub+1] != '|')
+          return 0;
+      }
+
+      //Check and-ors
+      else if(c[i] == '&' && c[i+1] != '&')
+        return 0;
+      else if(c[i] == '|' && (c[i+1] != '|' || isOrdinaryToken(c[i+1]) || c[i+1] != ' ' || c[i+1] != '\n'))
+        return 0;  
+
+      //Check that and-ors have an appropriate lhs and rhs
+      else if((c[i] == '&' && c[i+1] != '&') || (c[i] == '|' && c[i+1] == '|'))
+      {
+        andOr = 1;
+        while(c[sub-1] == ' ')
+          sub--;
+        //If the previous token is a newline or a special token, error
+        if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+            return 0;
+
+        sub = i;  //Reset sub
+
+        //If next non-space or non-newline is an operator, error
+        while(c[sub+1] == '\n' || c[sub+1] == ' ')
+          sub++;
+        //If the next token is a special token or blank, error
+        else if(!isOrdinaryToken(c[sub+1]))       
+          return 0;   
+      }
+
+      if(andOrs)
+        i += 2;
+      else
+        i++;
+  }
+
+  while(c[par] != '\0')
+  {
+    if(c[par] == '(')
+      leftPar++;
+    else if(c[par] == ')')
+      rightPar++;
+    par++;
+  }
+  
+  //If different number of left and right parentheses, error
+  if(leftPar != rightPar)
+    return 0;
+
   return 1;
 }
 
