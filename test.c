@@ -1,10 +1,3 @@
-// UCLA CS 111 Lab 1 command reading
-
-
-#include "command.h"
-#include "command-internals.h"
-#include "alloc.h"
-
 #include <ctype.h>  //For isalpha() and isdigit() functions
 #include <stdlib.h>
 #include <stdio.h>  //For EOF
@@ -13,14 +6,47 @@
 
 #define STACK_MAX 100
 
-/* FIXME: You may need to add #include directives, macro definitions,
-   static function definitions, etc.  */
+// UCLA CS 111 Lab 1 command printing, for debugging
 
-/* FIXME: Define the type 'struct command_stream' here.  This should
-   complete the incomplete type declaration in command.h.  */
+typedef struct command *command_t;
 
-// Stack implementation reference to:
-// http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
+enum command_type
+  {
+    AND_COMMAND,         // A && B
+    SEQUENCE_COMMAND,    // A ; B
+    OR_COMMAND,          // A || B
+    PIPE_COMMAND,        // A | B
+    SIMPLE_COMMAND,      // a simple command
+    SUBSHELL_COMMAND,    // ( A )
+  };
+
+// Data associated with a command.
+struct command
+{
+  enum command_type type;
+
+  // Exit status, or -1 if not known (e.g., because it has not exited yet).
+  int status;
+
+  // I/O redirections, or null if none.
+  char *input;
+  char *output;
+
+  union
+  {
+    // for AND_COMMAND, SEQUENCE_COMMAND, OR_COMMAND, PIPE_COMMAND:
+    struct command *command[2];
+
+    // for SIMPLE_COMMAND:
+    char **word;
+
+    // for SUBSHELL_COMMAND:
+    struct command *subshell_command;
+  } u;
+};
+
+
+
 struct Stack
 {
     command_t data[STACK_MAX];
@@ -532,142 +558,12 @@ command_tree_t make_command_tree (char *c) {
 }
 
 
-command_stream_t
-make_command_stream (int (*get_next_byte) (void *),
-         void *get_next_byte_argument)
-{
-  /* FIXME: Replace this with your implementation.  You may need to
-     add auxiliary functions and otherwise modify the source code.
-     You can also use external functions defined in the GNU C Library.  */
 
-    //Produce a linked list of command trees, used as input to read_command_stream
-    //Precedence from lowest to highest: ';' < '&&' == '||' < '|'
+int main(){
+	char c[100] = "\n\n\na\0";
 
-      int size = 2000;  //Arbitrary initial size
-      char *buffer = (char*) malloc(sizeof(char) * size); //Dynamically allocated array
-      char c; //Input character
-      int count = 0;//Counter used for indexing in my dynamically allocated array
-  
-      if (buffer == NULL) //Returns an error if buffer is NULL
-      {
-        fprintf(stderr, "Error when using 'buffer' malloc.");
-        exit(1);
-      }
-
-      c = get_next_byte(get_next_byte_argument);
-
-      while(c != EOF)
-      {
-        buffer[count] = c;
-        count++;
-
-        //Reallocate the size if necessary
-        if(count >= size)
-        {
-          buffer = (char*)realloc(buffer, size*2);
-
-          if(buffer == NULL)
-          {
-            fprintf(stderr, "Error when using 'buffer' malloc.");
-            exit(1);   
-          }
-
-          size *= 2;//Adjust size for future reallocations
-        }
-
-        c = get_next_byte(get_next_byte_argument);
-      }
-
-      buffer[count] = '\0';
-
-      removeWhiteSpace(buffer);
-      
-      if(!isValid(buffer)){
-        fprintf(stderr, "Buffer is invalid");
-        return 0;
-      }
-
-      struct command_stream s;
-      command_stream_t stream;
-      stream = &s;
-      stream->head = NULL;
-      stream->current = NULL;
-      stream->tail = NULL;
-
-      count = 0;
-
-      while(buffer[count] != '\0'){
-
-        char *temp_buffer = (char*) malloc(sizeof(char) * size);
-        int len = 0;
-
-        while(buffer[count] != '\n' && buffer[count+1] != '\n' && buffer[count] != '\0'){ 
-          temp_buffer[len] = buffer[count];
-          len++;
-          count++;
-        }
-
-        //Command trees are separated by 2 or more newlines
-        if((buffer[count] == '\n' && buffer[count+1] == '\n') || buffer[count] == '\0'){
-            temp_buffer[len] = '\0';
-
-            while(buffer[count] == '\n'){
-              count++;
-            }
-
-            command_tree_t tree;
-            tree->root = NULL;
-            tree->next = NULL;
-            tree->prev = NULL;
-            tree = make_command_tree(temp_buffer);
-            printf("New command tree created");
-            
-            if(stream->head == NULL){
-              stream->head = tree;
-              stream->current = stream->head;
-              stream->tail = stream->head;
-
-              stream->head->prev = NULL;
-              stream->head->next = NULL;
-            }
-
-            else{
-              stream->current = tree;
-              stream->tail->next = stream->current;
-              stream->current->prev = stream->tail;
-              stream->current->next = NULL;
-              stream->tail = stream->current;
-              stream->current = stream->head;
-            }
-
-        }
-
-      }
-
-    return stream;
+	removeWhiteSpace(c);
+	int a = isValid(c);
+	printf("%i\n", a);
 }
 
-
-command_t
-read_command_stream (command_stream_t s)
-{
-  /* FIXME: Replace this with your implementation too.  */
-  //  if (s.make_command_stream(!isWord(
-  
-  //int i;
-  //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
-
-  //Make sure not to go out of bounds
-
-  if(s->current != NULL){
-    command_t tree;
-    tree = s->current->root;
-    s->current = s->current->next;
-    return tree;
-  }
-
-  else
-    return NULL;
-  //error (1, 0, "command reading not yet implemented");
-  //return 0;
-}
