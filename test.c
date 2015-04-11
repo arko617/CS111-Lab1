@@ -143,144 +143,155 @@ int isSpecialToken(const char c)
 //Check entire buffer
 int isValid(char *c)
 {
-  int i = 0, sub; //iterators for first while loop
-  int par = 0; //iterators for second while loop
-  int andOr = 0; //boolean to see if it is an "and-or"
-  int leftPar = 0, rightPar = 0; //counters for "parentheses"
+    int i = 0, sub; //iterators for first while loop
+    int par = 0; //iterators for second while loop
+    int andOr = 0; //boolean to see if it is an "and-or"
+    int leftPar = 0, rightPar = 0; //counters for "parentheses"
   
-  //Make it easier to parse by removing extraneous white space
-  removeWhiteSpace(c);
+    //Make it easier to parse by removing extraneous white space
+    //removeWhiteSpace(c);
 
-  //First character must be an ordinary token, left parentheses, or start of a comment 
-  if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#') 
-    return 0;
+    //First character must be an ordinary token, left parentheses, or start of a comment 
+    if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#') 
+      return 0;
   
-  //Assume true until proven false
-  //Check all operators except parentheses (done after this while loop)
-  while(c[i] != '\0')
+    //Assume true until proven false
+    //Check all operators except parentheses (done after this while loop)
+    while(c[i] != '\0')
     {
-      andOr = 0;
-      sub = i; //To perform subchecks without modifying the "i" iterator
+        andOr = 0;
+        sub = i; //To perform subchecks without modifying the "i" iterator
       
-      //Check that the token is valid input
-      if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n' && c[i] != '#')
-		return 0;
+        //Check that the token is valid input
+        if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n' && c[i] != '#')
+            return 0;
       
-	//Enter this check if you have a comment that is NOT at the beginning of a line
-	/*if(c[0] != '#')
-	{
-		//Check that there is no ordinary token immediately preceding a comment
-		if(c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
-			return 0;
-	}*/	//Buggy
-	
-      //Check that < and > have valid tokens on either side
-      else if(c[i] == '<' || c[i] == '>')
-	{
-	  while(c[sub-1] == ' ')
-	    sub--;
-	  //If previous token is special or newline, error
-	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	    return 0;
-	  sub = i; //Reset sub
-	  while(c[sub+1] == '\n' || c[sub+1] == ' ')
-	    sub++;
-	  //If next token is special or blank, error
-	  if(!isOrdinaryToken(c[sub+1]))
-	    return 0;
-	}
+        //Enter this check if you have a comment that is NOT at the beginning of a line
+        /*else if(c[0] != '#')
+        {
+          //Check that there is no ordinary token immediately preceding a comment
+          if(c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
+            return 0;
+        }*/
 
-      //Check that ; has valid tokens on AT LEAST the left side
-      else if(c[i] == ';')
-	{
-	  while(c[sub-1] == ' ')
-	    sub--;
-	  //if previous token is special or newline, error
-	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	    return 0;
+        //Check that < and > have valid tokens on either side
+        else if(c[i] == '<' || c[i] == '>')
+	      {
+	         while(c[sub-1] == ' ')
+	           sub--;
+	         //If previous token is special or newline, error
+	         if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+	           return 0;
+	  
+            sub = i; //Reset sub
+	          while(c[sub+1] == '\n' || c[sub+1] == ' ')
+	             sub++;
+	  
+            //If next token is special or blank, error
+	         if(!isOrdinaryToken(c[sub+1]))
+	             return 0;
+	       }
 
-	  sub = i; //Reset sub
+          //Check that ; has valid tokens on AT LEAST the left side
+        else if(c[i] == ';')
+	      {
+	         while(c[sub-1] == ' ')
+	           sub--;
+	         //if previous token is special or newline, error
+	         if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+	           return 0;
 
-	  //If next non-space or non-newline is an operator, error
+	         sub = i; //Reset sub
 
-	  while(c[sub+1] == '\n' || c[sub+1] == ' ')
-	    sub++;
-	  if(isSpecialToken(c[sub+1]))
-	    return 0;
-	}
+	         //If next non-space or non-newline is an operator, error
+	         while(c[sub+1] == '\n' || c[sub+1] == ' ')
+	           sub++;
+	         if(isSpecialToken(c[sub+1]))
+	           return 0;
+	      }
 
-      //Check that | has valid tokens on AT LEAST the left side
-      else if(c[i] == '|')
-	{
-	  while(c[sub-1] == ' ')
-	    sub--;
+        //Check that | has valid tokens on AT LEAST the left side
+        else if(c[i] == '|')
+	      {
+	         while(c[sub-1] == ' ')
+	           sub--;
 
-	  //if previous token is special or newline, error
-	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	    return 0;
-	  sub = i; //Reset sub
+	         //if previous token is special or newline, error
+	         if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+	           return 0;
+	         sub = i; //Reset sub
 
-	  //If next non-space or non-newline is an operator or blank, error
-	  while(c[sub+1] == '\n' || c[sub+1] == ' ')
-	    sub++;
+	         //If next non-space or non-newline is an operator or blank, error
+	         while(c[sub+1] == '\n' || c[sub+1] == ' ')
+	           sub++;
 
-	  //Take into account that it could be ||
-	  if(!isOrdinaryToken(c[sub+1]) && c[sub+1] != '|')
-	    return 0;
-	}
+	         //Take into account that it could be ||
+	         if(!isOrdinaryToken(c[sub+1]) && c[sub+1] != '|')
+	           return 0;
+	      }
 
       //Check and-ors
-      else if(c[i] == '|' && (c[i+1] != '|' || isOrdinaryToken(c[i+1]) || c[i+1] != ' ' || c[i+1] != '\n'))
-	return 0;
+      //Regular if statement because we would have entered the conditional that checks for pipes
+      if(c[i]=='|' && c[i+1]!='|')
+      {
+        sub = i;  //Reset sub
+
+        //If next non-space or non-newline is an operator or blank, error
+        while(c[sub+1] == '\n' || c[sub+1] == ' ')
+          sub++;
+      
+        if(!isOrdinaryToken(c[sub+1]))
+          return 0;
+      }
 
       else if(c[i] == '&' && c[i+1] != '&')
-	return 0;
+	       return 0;
 
       //Check that and-ors have an appropriate lhs and rhs
       if((c[i] == '&' && c[i+1] == '&') || (c[i] == '|' && c[i+1] == '|'))
-	{
-	  andOr = 1;
+	    {
+	       andOr = 1;
 
-	  while(c[sub-1] == ' ')
-	    sub--;
+	       while(c[sub-1] == ' ')
+	          sub--;
 
-	  //If the previous token is a newline or a special token, error
-	  if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	    return 0;
+	       //If the previous token is a newline or a special token, error
+	       if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
+	         return 0;
 
-	  sub = i; //Reset sub
+	       sub = i; //Reset sub
 
-	  //Jump an extra element because the special operator is 2 digits
-	  //If next non-space or non-newline is an operator, error
-	  while(c[sub+2] == '\n' || c[sub+2] == ' ')
-	    sub++;
+	       //Jump an extra element because the special operator is 2 digits
+	       //If next non-space or non-newline is an operator, error
+	       while(c[sub+2] == '\n' || c[sub+2] == ' ')
+	          sub++;
 
-	  //If the next token is a special token or blank, error
-	  if(!isOrdinaryToken(c[sub+2])) 
-	    return 0; 
-	}
+	       //If the next token is a special token or blank, error
+	       if(!isOrdinaryToken(c[sub+2])) 
+	         return 0; 
+	     }
 
       if(andOr)
-	i += 2;
+	       i += 2;
 
       else
-	i++;
-    }
+	       i++;
+  }
 
   while(c[par] != '\0')
-    {
+  {
       if(c[par] == '(')
-		leftPar++;
+	      leftPar++;
 
       else if(c[par] == ')')
-		rightPar++;
+	      rightPar++;
 
       par++;
-    }
+  }
 
   //If different number of left and right parentheses, error
   if(leftPar != rightPar)
-    return 0;
+     return 0;
   return 1;
 }
 
@@ -635,7 +646,7 @@ int main(){
 	int z7 = isValid(x7);
 	int z8 = isValid(x8);
 
-	char christine[69] = "a ; b";
+	char christine[69] = "a|a";
 	int matthew = isValid(christine);
 	
 
@@ -673,6 +684,7 @@ int main(){
 	printf("%i\n", z7);
 	printf("%i\n", z8);
 
+	printf("FUCK CHRISTINE\n");
 	printf("%i\n", matthew);
 }
 
