@@ -171,8 +171,8 @@ int isValid(char *c)
           return 0;
         }    
       
-        //Check that there is no ordinary token immediately preceding a comment
-        else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
+        //Check that there is no ordinary or special token immediately preceding a comment
+        else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' && c[i-1] != '\n'))
         {
           fprintf(stderr, "Error: There cannot be an ordinary token before a comment.\n");
           return 0;

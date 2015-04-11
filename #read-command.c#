@@ -1,6 +1,5 @@
 // UCLA CS 111 Lab 1 command reading
 
-
 #include "command.h"
 #include "command-internals.h"
 #include "alloc.h"
@@ -142,15 +141,15 @@ int isValid(char *c)
           return 0;
         }    
       
-        //Check that there is no ordinary or special token immediately preceding a comment
-        else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' && c[i-1] != '\n'))
+        //Check that there is no ordinary token immediately preceding a comment
+        else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
         {
           fprintf(stderr, "Error: There cannot be an ordinary token before a comment.\n");
           return 0;
         }    
 
         //If you encounter a comment, you can skip through until you encounter a newline
-        else if(c[i] == '#')
+        if(c[i] == '#')
         {
           while(c[i] != '\n' && c[i] != '\0')
             i++;
@@ -313,17 +312,24 @@ int isValid(char *c)
   return 1;
 }
 
+typedef struct command_tree *command_tree_t;
+
+struct command_tree {
+  command_t root;
+  command_tree_t next;
+  command_tree_t prev;
+};
+
 
 struct command_stream {
-  int read;
-  command_t root;
-  command_stream_t next;
-  command_stream_t prev;
+  command_tree_t head;
+  command_tree_t current;
+  command_tree_t tail;
 };
 
 
 // Each COMMAND TREE creator
-command_t make_command_tree (char *c) {
+command_tree_t make_command_tree (char *c) {
   struct Stack cmdStack;
   struct Stack oprStack;
 
@@ -569,12 +575,17 @@ command_t make_command_tree (char *c) {
     Stack_Pop(&cmdStack);
     
     oprTemp->u.command[0] = cmdTemp2;
-    oprTemp->u.command[1] = cmdTemp1;
-    Stack_Push(&cmdStack, oprTemp); 
+  oprTemp->u.command[1] = cmdTemp1;
+  Stack_Push(&cmdStack, oprTemp); 
   }
+
+  struct command_tree t;
+  command_tree_t tree;
+  tree = &t;
   
-  command_t tree = (command_t)malloc(sizeof(struct command));
-  tree = Stack_Top(&cmdStack);
+  struct command temp;
+  temp = *(Stack_Top(&cmdStack));
+  tree->root = &temp;
  
   Stack_Pop(&cmdStack);
 
@@ -637,8 +648,12 @@ make_command_stream (int (*get_next_byte) (void *),
         return 0;
       }
 
-      command_stream_t stream = NULL;
-      command_stream_t follower = NULL;
+      struct command_stream s;
+      command_stream_t stream;
+      stream = &s;
+      stream->head = NULL;
+      stream->current = NULL;
+      stream->tail = NULL;
 
       count = 0;
 
@@ -647,60 +662,48 @@ make_command_stream (int (*get_next_byte) (void *),
         char *temp_buffer = (char*) malloc(sizeof(char) * size);
         int len = 0;
 
-        while(buffer[count] != '\0'){ 
-
-          if((buffer[count] == '\n' && buffer[count + 1] == '\n') || (buffer[count] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+3] == '\n')){
-            break;
-          }
-
+        while(buffer[count] != '\n' && buffer[count+1] != '\n' && buffer[count] != '\0'){ 
           temp_buffer[len] = buffer[count];
           len++;
           count++;
         }
-            
 
         //Command trees are separated by 2 or more newlines
+        if((buffer[count] == '\n' && buffer[count+1] == '\n') || buffer[count] == '\0'){
             temp_buffer[len] = '\0';
 
-            while(buffer[count] == '\n' || buffer[count] == ' '){
+            while(buffer[count] == '\n'){
               count++;
             }
 
-            printf("New command tree created\n");
-
-            if(stream == NULL && follower == NULL){
-              stream = (command_stream_t)malloc(sizeof(struct command_stream));
-              stream->read = 0;
-              stream->root = (command_t)malloc(sizeof(struct command));
-              stream->root = make_command_tree(temp_buffer);
-              stream->prev = NULL;
-              stream->next = NULL;
-            }
+            command_tree_t tree;
+            tree->root = NULL;
+            tree->next = NULL;
+            tree->prev = NULL;
+            tree = make_command_tree(temp_buffer);
+            printf("New command tree created");
             
-            else if(stream != NULL && follower == NULL){
-              stream->next = (command_stream_t)malloc(sizeof(struct command_stream));
-              stream->next->read = 0;
-              stream->next->root = (command_t)malloc(sizeof(struct command));
-              stream->next->root = make_command_tree(temp_buffer);
-              follower = stream->next;
+            if(stream->head == NULL){
+              stream->head = tree;
+              stream->current = stream->head;
+              stream->tail = stream->head;
 
-              follower->prev = stream;
-              follower->next = NULL;
+              stream->head->prev = NULL;
+              stream->head->next = NULL;
             }
 
             else{
-              command_stream_t temp = (command_stream_t)malloc(sizeof(struct command_stream));
-              temp->read = 0;
-              temp->root = (command_t)malloc(sizeof(struct command));
-              temp->root = make_command_tree(temp_buffer);
-
-              follower->next = temp;
-              temp->prev = follower;
-              temp->next = NULL;
-              follower = follower->next;
+              stream->current = tree;
+              stream->tail->next = stream->current;
+              stream->current->prev = stream->tail;
+              stream->current->next = NULL;
+              stream->tail = stream->current;
+              stream->current = stream->head;
             }
 
         }
+
+      }
 
     return stream;
 }
@@ -710,28 +713,20 @@ command_t
 read_command_stream (command_stream_t s)
 {
   /* FIXME: Replace this with your implementation too.  */
-  //  if (s.make_command_stream(!isWord(
-  
-  //int i;
+
   //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
 
   //Make sure not to go out of bounds
 
-  if(s != NULL && s->read == 0){
+  if(s->current != NULL){
     command_t tree;
-    tree = s->root;
-  s->read++;
+    tree = s->current->root;
+    s->current = s->current->next;
     return tree;
   }
 
-  else if(s != NULL && s->next != NULL){
-    return read_command_stream(s->next);
-  }
-
-  else{
+  else
     return NULL;
-  }
-
   //error (1, 0, "command reading not yet implemented");
   //return 0;
 }
