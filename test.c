@@ -342,6 +342,7 @@ int isValid(char *c)
   return 1;
 }
 
+typedef struct command_stream *command_stream_t;
 
 struct command_stream {
   int end;
@@ -612,8 +613,7 @@ command_t make_command_tree (char *c) {
 
 
 command_stream_t
-make_command_stream (int (*get_next_byte) (void *),
-         void *get_next_byte_argument)
+make_command_stream (char *z)
 {
   /* FIXME: Replace this with your implementation.  You may need to
      add auxiliary functions and otherwise modify the source code.
@@ -622,6 +622,7 @@ make_command_stream (int (*get_next_byte) (void *),
     //Produce a linked list of command trees, used as input to read_command_stream
     //Precedence from lowest to highest: ';' < '&&' == '||' < '|'
 
+     	int o = 0;
       int size = 2000;  //Arbitrary initial size
       char *buffer = (char*) malloc(sizeof(char) * size); //Dynamically allocated array
       char c; //Input character
@@ -633,9 +634,9 @@ make_command_stream (int (*get_next_byte) (void *),
         exit(1);
       }
 
-      c = get_next_byte(get_next_byte_argument);
+      c = z[o];
 
-      while(c != EOF)
+      while(c != '\0')
       {
         buffer[count] = c;
         count++;
@@ -654,7 +655,8 @@ make_command_stream (int (*get_next_byte) (void *),
           size *= 2;//Adjust size for future reallocations
         }
 
-        c = get_next_byte(get_next_byte_argument);
+        o++;
+        c = z[o];
       }
 
       buffer[count] = '\0';
@@ -665,6 +667,8 @@ make_command_stream (int (*get_next_byte) (void *),
         fprintf(stderr, "Buffer is invalid");
         return 0;
       }
+
+      printf("%s\n", buffer);
 
       command_stream_t stream = NULL;
       command_stream_t follower = NULL;
@@ -876,5 +880,8 @@ int main(){
 
 	printf("FUCK CHRISTINE\n");
 	printf("%i\n", matthew);
+
+	char blah[100] = "a|b \n \n a&&b \n    \n \n a || b\0";
+	make_command_stream(blah);
 }
 
