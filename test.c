@@ -676,8 +676,6 @@ make_command_stream (char *z)
         return 0;
       }
 
-      printf("%s\n", buffer);
-
       command_stream_t stream = NULL;
       command_stream_t follower = NULL;
 
