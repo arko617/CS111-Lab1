@@ -147,14 +147,16 @@ int isValid(char *c)
     int par = 0; //iterators for second while loop
     int andOr = 0; //boolean to see if it is an "and-or"
     int leftPar = 0, rightPar = 0; //counters for "parentheses"
-  
+   
     //Make it easier to parse by removing extraneous white space
     removeWhiteSpace(c);
 
     //First character must be an ordinary token, left parentheses, or start of a comment 
-    if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#') 
+    if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#')
+    {
+      fprintf(stderr, "Error: First character must be valid.\n");       
       return 0;
-  
+    }
     //Assume true until proven false
     //Check all operators except parentheses (done after this while loop)
     while(c[i] != '\0')
@@ -164,13 +166,19 @@ int isValid(char *c)
       
         //Check that the token is valid input
         if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n' && c[i] != '#')
-            return 0;
+        {
+          fprintf(stderr, "Error: Token must be valid.\n");
+          return 0;
+        }    
       
-          //Check that there is no ordinary token immediately preceding a comment
+        //Check that there is no ordinary token immediately preceding a comment
         else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
-            return 0;
+        {
+          fprintf(stderr, "Error: There cannot be an ordinary token before a comment.\n");
+          return 0;
+        }    
 
-           //If you encounter a comment, you can skip through until you encounter a newline
+        //If you encounter a comment, you can skip through until you encounter a newline
         if(c[i] == '#')
         {
           while(c[i] != '\n' && c[i] != '\0')
@@ -185,7 +193,10 @@ int isValid(char *c)
 	           sub--;
 	         //If previous token is special or newline, error
 	         if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	           return 0;
+	         {
+              fprintf(stderr, "Error: Cannot have a special token or newline before IO redirect.\n");
+              return 0;
+           }    
 	  
             sub = i; //Reset sub
 	          while(c[sub+1] == '\n' || c[sub+1] == ' ')
@@ -193,7 +204,10 @@ int isValid(char *c)
 	  
             //If next token is special or blank, error
 	         if(!isOrdinaryToken(c[sub+1]))
-	             return 0;
+	         {
+              fprintf(stderr, "Error: Cannot have a special token or blank after IO redirect.\n");
+              return 0;
+           }    
 	       }
 
           //Check that ; has valid tokens on AT LEAST the left side
@@ -203,7 +217,10 @@ int isValid(char *c)
 	           sub--;
 	         //if previous token is special or newline, error
 	         if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	           return 0;
+	         {
+              fprintf(stderr, "Error: Cannot have a special token or newline before semicolon.\n");
+              return 0;
+           }    
 
 	         sub = i; //Reset sub
 
@@ -211,7 +228,10 @@ int isValid(char *c)
 	         while(c[sub+1] == '\n' || c[sub+1] == ' ')
 	           sub++;
 	         if(isSpecialToken(c[sub+1]))
-	           return 0;
+	         {
+              fprintf(stderr, "Error: Cannot have a special token after semicolon.\n");
+              return 0;
+           }
 	      }
 
         //Check that | has valid tokens on AT LEAST the left side
@@ -222,7 +242,11 @@ int isValid(char *c)
 
 	         //if previous token is special or newline, error
 	         if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	           return 0;
+	         {
+              fprintf(stderr, "Error: Cannot have a special token or newline before pipe.\n");
+              return 0;
+           }
+
 	         sub = i; //Reset sub
 
 	         //If next non-space or non-newline is an operator or blank, error
@@ -231,7 +255,10 @@ int isValid(char *c)
 
 	         //Take into account that it could be ||
 	         if(!isOrdinaryToken(c[sub+1]) && c[sub+1] != '|')
-	           return 0;
+	         {
+              fprintf(stderr, "Error: Cannot have a special token that is not '|' after pipe.\n");
+              return 0;
+           }
 	      }
 
       //Check and-ors
@@ -245,11 +272,17 @@ int isValid(char *c)
           sub++;
       
         if(!isOrdinaryToken(c[sub+1]))
-          return 0;
+        {
+            fprintf(stderr, "Error: Cannot have a special token after OR.\n");
+            return 0;
+        }
       }
 
       else if(c[i] == '&' && c[i+1] != '&')
+      {
+         fprintf(stderr, "Error: Must have two consecutive '&' for a valid AND command.");
 	       return 0;
+      }
 
       //Check that and-ors have an appropriate lhs and rhs
       if((c[i] == '&' && c[i+1] == '&') || (c[i] == '|' && c[i+1] == '|'))
@@ -261,7 +294,10 @@ int isValid(char *c)
 
 	       //If the previous token is a newline or a special token, error
 	       if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
-	         return 0;
+          {
+              fprintf(stderr, "Error: Cannot have a special token or newline before and-or.\n");
+              return 0;
+          }
 
 	       sub = i; //Reset sub
 
@@ -272,8 +308,11 @@ int isValid(char *c)
 
 	       //If the next token is a special token or blank, error
 	       if(!isOrdinaryToken(c[sub+2])) 
-	         return 0; 
-	     }
+	       {
+              fprintf(stderr, "Error: Cannot have a special token or blank after and-or.\n");
+              return 0;
+        }
+	   }
 
       if(andOr)
 	       i += 2;
@@ -295,9 +334,14 @@ int isValid(char *c)
 
   //If different number of left and right parentheses, error
   if(leftPar != rightPar)
+  {
+    fprintf(stderr, "Error: Number of left and right parentheses have to match.\n");
      return 0;
+  }
+
   return 1;
 }
+
 
 typedef struct command_tree *command_tree_t;
 
