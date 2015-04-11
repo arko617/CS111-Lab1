@@ -149,7 +149,7 @@ int isValid(char *c)
   int leftPar = 0, rightPar = 0; //counters for "parentheses"
   
   //Make it easier to parse by removing extraneous white space
-  //removeWhiteSpace(c);
+  removeWhiteSpace(c);
 
   //First character must be an ordinary token, left parentheses, or start of a comment 
   if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#') 
@@ -167,12 +167,12 @@ int isValid(char *c)
 		return 0;
       
 	//Enter this check if you have a comment that is NOT at the beginning of a line
-	else if(c[0] != '#')
+	/*if(c[0] != '#')
 	{
 		//Check that there is no ordinary token immediately preceding a comment
 		if(c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
 			return 0;
-	}
+	}*/	//Buggy
 	
       //Check that < and > have valid tokens on either side
       else if(c[i] == '<' || c[i] == '>')
@@ -640,6 +640,7 @@ int main(){
 	
 
 	printf("%i\n", a);
+	printf("ZEROES MOTHER FUCKER\n");
 	printf("%i\n", b1);
 	printf("%i\n", b2);
 	printf("%i\n", b3);
@@ -662,6 +663,7 @@ int main(){
 	printf("%i\n", b20);
 	printf("%i\n", b21);
 
+	printf("ONES MOTHER FUCKER\n");
 	printf("%i\n", z1);
 	printf("%i\n", z2);
 	printf("%i\n", z3);
