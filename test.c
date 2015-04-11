@@ -342,6 +342,7 @@ int isValid(char *c)
   return 1;
 }
 
+<<<<<<< HEAD
 typedef struct command_stream *command_stream_t;
 
 typedef struct command_tree *command_tree_t;
@@ -352,6 +353,8 @@ struct command_tree {
   command_tree_t prev;
 };
 
+=======
+>>>>>>> 73308b5162e1b69be00ba4350f673a94e5cb531e
 
 struct command_stream {
   int end;
