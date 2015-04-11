@@ -342,9 +342,7 @@ int isValid(char *c)
   return 1;
 }
 
-<<<<<<< HEAD
 typedef struct command_stream *command_stream_t;
-=======
 
 typedef struct command_tree *command_tree_t;
 
@@ -354,7 +352,6 @@ struct command_tree {
   command_tree_t prev;
 };
 
->>>>>>> bf5090b4290c4d6b674c5f83d8ad80407df44567
 
 struct command_stream {
   int end;
@@ -781,17 +778,17 @@ read_command_stream (command_stream_t s)
 }
 
 int main(){
-<<<<<<< HEAD
 	char c[100] = "a && c\n \n  a | b   \n \n  a || b \n\n\n a";
 
   command_stream_t stream;
-  stream = make_command_stream(c);
+  stream = make_command_stream(c, 1);
 
   command_t tree;
   tree = read_command_stream(stream);
   tree = read_command_stream(stream);
-=======
-	char c[100] = "(a && b)\0";
+
+  printf("GOT TO MAKING STRINGS FUCKER\n");
+	char d[100] = "(a && b)\0";
 	char a1[100] = "`";
   	char a2[100] = ">"; 
   	char a3[100] = "<";
@@ -899,6 +896,5 @@ int main(){
 
 	printf("FUCK CHRISTINE\n");
 	printf("%i\n", matthew);
->>>>>>> bf5090b4290c4d6b674c5f83d8ad80407df44567
 }
 
