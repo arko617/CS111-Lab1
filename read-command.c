@@ -117,9 +117,9 @@ int isValid(char *c)
     int par = 0; //iterators for second while loop
     int andOr = 0; //boolean to see if it is an "and-or"
     int leftPar = 0, rightPar = 0; //counters for "parentheses"
-  
+   
     //Make it easier to parse by removing extraneous white space
-    //removeWhiteSpace(c);
+    removeWhiteSpace(c);
 
     //First character must be an ordinary token, left parentheses, or start of a comment 
     if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#') 
@@ -136,13 +136,17 @@ int isValid(char *c)
         if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n' && c[i] != '#')
             return 0;
       
-        //Enter this check if you have a comment that is NOT at the beginning of a line
-        /*else if(c[0] != '#')
-        {
-          //Check that there is no ordinary token immediately preceding a comment
-          if(c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
+        //Check that there is no ordinary token immediately preceding a comment
+        else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
             return 0;
-        }*/
+
+        //If you encounter a comment, you can skip through until you encounter a newline
+        if(c[i] == '#')
+        {
+          while(c[i] != '\n' && c[i] != '\0')
+            i++;
+          continue;
+        }
 
         //Check that < and > have valid tokens on either side
         else if(c[i] == '<' || c[i] == '>')
