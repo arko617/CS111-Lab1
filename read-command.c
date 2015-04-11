@@ -38,6 +38,7 @@ command_t Stack_Top(struct Stack *S)
 {
     if (S->size == 0) {
         fprintf(stderr, "Error: stack empty\n");
+        printf("GO FUCK YOURSELF");
         exit(0);
     } 
 
