@@ -277,24 +277,18 @@ int isValid(char *c)
   return 1;
 }
 
-typedef struct command_tree *command_tree_t;
-
-struct command_tree {
-  command_t root;
-  command_tree_t next;
-  command_tree_t prev;
-};
-
+typedef struct command_stream *command_stream_t;
 
 struct command_stream {
-  command_tree_t head;
-  command_tree_t current;
-  command_tree_t tail;
+  int end;
+  command_t root;
+  command_stream_t next;
+  command_stream_t prev;
 };
 
 
 // Each COMMAND TREE creator
-command_tree_t make_command_tree (char *c) {
+command_t make_command_tree (char *c) {
   struct Stack cmdStack;
   struct Stack oprStack;
 
@@ -540,17 +534,12 @@ command_tree_t make_command_tree (char *c) {
     Stack_Pop(&cmdStack);
     
     oprTemp->u.command[0] = cmdTemp2;
-  oprTemp->u.command[1] = cmdTemp1;
-  Stack_Push(&cmdStack, oprTemp); 
+    oprTemp->u.command[1] = cmdTemp1;
+    Stack_Push(&cmdStack, oprTemp); 
   }
-
-  struct command_tree t;
-  command_tree_t tree;
-  tree = &t;
   
-  struct command temp;
-  temp = *(Stack_Top(&cmdStack));
-  tree->root = &temp;
+  command_t tree = (command_t)malloc(sizeof(struct command));
+  tree = Stack_Top(&cmdStack);
  
   Stack_Pop(&cmdStack);
 
@@ -558,12 +547,170 @@ command_tree_t make_command_tree (char *c) {
 }
 
 
+command_stream_t
+make_command_stream (int (*get_next_byte) (void *),
+         void *get_next_byte_argument)
+{
+  /* FIXME: Replace this with your implementation.  You may need to
+     add auxiliary functions and otherwise modify the source code.
+     You can also use external functions defined in the GNU C Library.  */
+
+    //Produce a linked list of command trees, used as input to read_command_stream
+    //Precedence from lowest to highest: ';' < '&&' == '||' < '|'
+
+      int size = 2000;  //Arbitrary initial size
+      char *buffer = (char*) malloc(sizeof(char) * size); //Dynamically allocated array
+      char c; //Input character
+      int count = 0;//Counter used for indexing in my dynamically allocated array
+  
+      if (buffer == NULL) //Returns an error if buffer is NULL
+      {
+        fprintf(stderr, "Error when using 'buffer' malloc.");
+        exit(1);
+      }
+
+      c = get_next_byte(get_next_byte_argument);
+
+      while(c != EOF)
+      {
+        buffer[count] = c;
+        count++;
+
+        //Reallocate the size if necessary
+        if(count >= size)
+        {
+          buffer = (char*)realloc(buffer, size*2);
+
+          if(buffer == NULL)
+          {
+            fprintf(stderr, "Error when using 'buffer' malloc.");
+            exit(1);   
+          }
+
+          size *= 2;//Adjust size for future reallocations
+        }
+
+        c = get_next_byte(get_next_byte_argument);
+      }
+
+      buffer[count] = '\0';
+
+      removeWhiteSpace(buffer);
+      
+      if(!isValid(buffer)){
+        fprintf(stderr, "Buffer is invalid");
+        return 0;
+      }
+
+      command_stream_t stream = NULL;
+      command_stream_t follower = NULL;
+
+      count = 0;
+
+      while(buffer[count] != '\0'){
+
+        char *temp_buffer = (char*) malloc(sizeof(char) * size);
+        int len = 0;
+
+        while(buffer[count] != '\0'){ 
+
+          if((buffer[count] == '\n' && buffer[count + 1] == '\n') || (buffer[count] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+3] == '\n')){
+            break;
+          }
+
+          temp_buffer[len] = buffer[count];
+          len++;
+          count++;
+        }
+            
+
+        //Command trees are separated by 2 or more newlines
+            temp_buffer[len] = '\0';
+
+            while(buffer[count] == '\n' || buffer[count] == ' '){
+              count++;
+            }
+
+            printf("New command tree created\n");
+
+            if(stream == NULL && follower == NULL){
+              stream = (command_stream_t)malloc(sizeof(struct command_stream));
+              stream->root = (command_t)malloc(sizeof(struct command));
+              stream->root = make_command_tree(temp_buffer);
+              stream->prev = NULL;
+              stream->next = NULL;
+              stream->end = 0;
+            }
+            
+            else if(stream != NULL && follower == NULL){
+              stream->next = (command_stream_t)malloc(sizeof(struct command_stream));
+              stream->next->root = (command_t)malloc(sizeof(struct command));
+              stream->next->root = make_command_tree(temp_buffer);
+              follower = stream->next;
+
+              follower->prev = stream;
+              follower->next = NULL;
+            }
+
+            else{
+              command_stream_t temp = (command_stream_t)malloc(sizeof(struct command_stream));
+              temp->root = (command_t)malloc(sizeof(struct command));
+              temp->root = make_command_tree(temp_buffer);
+
+              follower->next = temp;
+              temp->prev = follower;
+              temp->next = NULL;
+              follower = follower->next;
+            }
+
+        }
+
+    return stream;
+}
+
+
+command_t
+read_command_stream (command_stream_t s)
+{
+  /* FIXME: Replace this with your implementation too.  */
+  //  if (s.make_command_stream(!isWord(
+  
+  //int i;
+  //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
+
+  //Make sure not to go out of bounds
+
+  if(s->next != NULL){
+    command_t tree;
+    tree = s->root;
+    s = s->next;
+    printf("%i\n", s->root->type);
+    return tree;
+  }
+
+  else if(s->next == NULL && s->end == 0){
+    command_t tree;
+    tree = s->root;
+    s->end++;
+    return tree;
+  }
+
+  else{
+    return NULL;
+  }
+
+  //error (1, 0, "command reading not yet implemented");
+  //return 0;
+}
 
 int main(){
-	char c[100] = "\n\n\na\0";
+	char c[100] = "a && c\n \n  a | b   \n \n  a || b \n\n\n a";
 
-	removeWhiteSpace(c);
-	int a = isValid(c);
-	printf("%i\n", a);
+  command_stream_t stream;
+  stream = make_command_stream(c);
+
+  command_t tree;
+  tree = read_command_stream(stream);
+  tree = read_command_stream(stream);
 }
 
