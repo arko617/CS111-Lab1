@@ -149,10 +149,10 @@ int isValid(char *c)
   int leftPar = 0, rightPar = 0; //counters for "parentheses"
   
   //Make it easier to parse by removing extraneous white space
-  removeWhiteSpace(c);
+  //removeWhiteSpace(c);
 
-  //First character must be an ordinary token or left parentheses 
-  if(!isOrdinaryToken(c[0]) && c[0] != '(') //CHECK BUGGY
+  //First character must be an ordinary token, left parentheses, or start of a comment 
+  if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#') 
     return 0;
   
   //Assume true until proven false
@@ -161,11 +161,19 @@ int isValid(char *c)
     {
       andOr = 0;
       sub = i; //To perform subchecks without modifying the "i" iterator
-      //Check that the token is valid input
-
-      if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n')
-	return 0;
       
+      //Check that the token is valid input
+      if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n' && c[i] != '#')
+		return 0;
+      
+	//Enter this check if you have a comment that is NOT at the beginning of a line
+	else if(c[0] != '#')
+	{
+		//Check that there is no ordinary token immediately preceding a comment
+		if(c[i] == '#' && (c[i-1] != ' ' || c[i-1] != '\n'))
+			return 0;
+	}
+	
       //Check that < and > have valid tokens on either side
       else if(c[i] == '<' || c[i] == '>')
 	{
@@ -560,9 +568,109 @@ command_tree_t make_command_tree (char *c) {
 
 int main(){
 	char c[100] = "(a && b)\0";
+	char a1[100] = "`";
+  	char a2[100] = ">"; 
+  	char a3[100] = "<";
+  	char a4[100] = "a >b <"; 
+  	char a5[100] = ";";
+  	char a6[100] = "; a";
+  	char a7[100] = "a ||";
+  	char a8[100] = "a\n  || b"; 
+  	char a9[100] = "a\n  | b";
+  	char a10[100] = "a\n  ; b";
+  	char a11[100] = "a;;b";
+  	char a12[100] = "a&&&b"; 
+  	char a13[100] = "a|||b";
+  	char a14[100] = "|a";
+  	char a15[100] = "< a";
+  	char a16[100] = "&& a";
+  	char a17[100] = "||a";
+  	char a18[100] = "(a|b";
+  	char a19[100] = "a;b)";
+  	char a20[100] = "( (a)";
+  	char a21[100] = "a>>>b";
 
-	removeWhiteSpace(c);
-	int a = isValid(c);
+  	char x1[100] = "true";
+	char x2[100] = "g++ -c foo.c";
+  	char x3[100] = ": : :";
+  	char x4[100] = "cat < /etc/passwd | tr a-z A-Z | sort -u || echo sort failed!";
+  	char x5[100] = "a b<c > d";
+  	char x6[100] = "cat < /etc/passwd | tr a-z A-Z | sort -u > out || echo sort failed!";
+  	char x7[100] = "a&&b||\nc &&\n   d | e && f|\n\ng<h";
+  	char x8[100] = "# This is a weird example: nobody would ever want to run this.\na<b>c|d<e>f|g<h>i\nEOF";
+
+	//removeWhiteSpace(c);
+	int a = isValid(c);	//1
+
+	//All 0
+	int b1 = isValid(a1);
+	int b2 = isValid(a2);
+	int b3 = isValid(a3);
+	int b4 = isValid(a4);
+	int b5 = isValid(a5);
+	int b6 = isValid(a6);
+	int b7 = isValid(a7);
+	int b8 = isValid(a8);
+	int b9 = isValid(a9);
+	int b10 = isValid(a10);
+	int b11 = isValid(a11);
+	int b12 = isValid(a12);
+	int b13 = isValid(a13);
+	int b14 = isValid(a14);
+	int b15 = isValid(a15);
+	int b16 = isValid(a16);
+	int b17 = isValid(a17);
+	int b18 = isValid(a18);
+	int b19 = isValid(a19);
+	int b20 = isValid(a20);
+	int b21 = isValid(a21);
+
+	//All 1
+	int z1 = isValid(x1);
+	int z2 = isValid(x2);
+	int z3 = isValid(x3);
+	int z4 = isValid(x4);
+	int z5 = isValid(x5);
+	int z6 = isValid(x6);
+	int z7 = isValid(x7);
+	int z8 = isValid(x8);
+
+	char christine[69] = "a ; b";
+	int matthew = isValid(christine);
+	
+
 	printf("%i\n", a);
+	printf("%i\n", b1);
+	printf("%i\n", b2);
+	printf("%i\n", b3);
+	printf("%i\n", b4);
+	printf("%i\n", b5);
+	printf("%i\n", b6);
+	printf("%i\n", b7);
+	printf("%i\n", b8);
+	printf("%i\n", b9);
+	printf("%i\n", b10);
+	printf("%i\n", b11);
+	printf("%i\n", b12);
+	printf("%i\n", b13);
+	printf("%i\n", b14);
+	printf("%i\n", b15);
+	printf("%i\n", b16);
+	printf("%i\n", b17);
+	printf("%i\n", b18);
+	printf("%i\n", b19);
+	printf("%i\n", b20);
+	printf("%i\n", b21);
+
+	printf("%i\n", z1);
+	printf("%i\n", z2);
+	printf("%i\n", z3);
+	printf("%i\n", z4);
+	printf("%i\n", z5);
+	printf("%i\n", z6);
+	printf("%i\n", z7);
+	printf("%i\n", z8);
+
+	printf("%i\n", matthew);
 }
 
