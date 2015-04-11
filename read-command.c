@@ -714,20 +714,6 @@ read_command_stream (command_stream_t s)
 {
   /* FIXME: Replace this with your implementation too.  */
 
-  //Move to next tree if we are at the root 
-  if(s.current != NULL && s.current -> root)
-  {
-
-  } 
-  
-  //Move to the next pointer if possible
-  else if(s.current != NULL && s.current -> next != NULL)
-  {
-
-  }
-
-  else
-    return NULL;
   //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
 
   //Make sure not to go out of bounds
