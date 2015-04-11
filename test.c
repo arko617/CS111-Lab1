@@ -151,8 +151,8 @@ int isValid(char *c)
   //Make it easier to parse by removing extraneous white space
   removeWhiteSpace(c);
 
-  //First character must NOT be a special token
-  if(isSpecialToken(c[i]))
+  //First character must be an ordinary token or left parentheses 
+  if(!isOrdinaryToken(c[0]) && c[0] != '(') //CHECK BUGGY
     return 0;
   
   //Assume true until proven false
@@ -262,13 +262,12 @@ int isValid(char *c)
   while(c[par] != '\0')
     {
       if(c[par] == '(')
-	leftPar++;
+		leftPar++;
 
       else if(c[par] == ')')
-	rightPar++;
+		rightPar++;
 
       par++;
-
     }
 
   //If different number of left and right parentheses, error
@@ -560,7 +559,7 @@ command_tree_t make_command_tree (char *c) {
 
 
 int main(){
-	char c[100] = "\n\n\na\0";
+	char c[100] = "(a && b)\0";
 
 	removeWhiteSpace(c);
 	int a = isValid(c);
