@@ -312,8 +312,9 @@ int isValid(char *c)
 }
 
 
+//Acts as the linked list for our command tree
 struct command_stream {
-  int read;
+  int read; //boolean to tell you if stream is read or not
   command_t root;
   command_stream_t next;
   command_stream_t prev;
@@ -342,6 +343,7 @@ command_t make_command_tree (char *c) {
       int count = 0;
       x->u.word = (char**)malloc(sizeof(char*) * 100);
       
+      //Allocate space for each element of the double pointer
       int j = 0;
       while(j < 100){
         x->u.word[j] = (char*)malloc(sizeof(char) * 100);
@@ -352,12 +354,14 @@ command_t make_command_tree (char *c) {
         
         int len = 0;
 
+        //Set ordinary tokens
         while(isOrdinaryToken(c[i])){
           x->u.word[count][len] = c[i];
           len++;
           i++;
         }
 
+        //Put a zero byte to signal end of a file
         if(len > 0){
           x->u.word[count][len] = '\0';
           count++;
@@ -377,6 +381,7 @@ command_t make_command_tree (char *c) {
 
       x->type = PIPE_COMMAND;
 
+//Assign operators and pop off stack when assignment is finished
       while(oprStack.size != 0 && Stack_Top(&oprStack)->type == PIPE_COMMAND){
         command_t oprTemp = Stack_Top(&oprStack);
         Stack_Pop(&oprStack);
@@ -416,6 +421,7 @@ command_t make_command_tree (char *c) {
       }
 
       Stack_Push(&oprStack, x);
+      //Skip 2 elements since OR has two digits
       i+=2;
     }
 
@@ -438,11 +444,13 @@ command_t make_command_tree (char *c) {
         Stack_Push(&cmdStack, oprTemp);
       }
 
+      //Skip 2 elements since AND has two digits
       Stack_Push(&oprStack, x);
       i+=2;
     }
 
     // For SEQUENCE commands
+    //Condition if there is a space after the semicolon
     else if(c[i] == ';'){
 
       if(c[i+1] != '\0'){
@@ -471,6 +479,7 @@ command_t make_command_tree (char *c) {
           }
         }
 
+        //No space immediately after
         else{
 
           x->type = SEQUENCE_COMMAND;
@@ -873,7 +882,7 @@ read_command_stream (command_stream_t s)
   if(s != NULL && s->read == 0){
     command_t tree;
     tree = s->root;
-  s->read++;
+    s->read++;
     return tree;
   }
 
