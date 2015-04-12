@@ -801,6 +801,14 @@ make_command_stream (int (*get_next_byte) (void *),
           char temp_preceding = buffer[count-2];
 
           
+          if(buffer[count] == '#'){
+          	while(buffer[count] != '\n'){
+          		count++;
+          	}
+
+          	count++;
+          }
+
 
           if((buffer[count] == '\n' && buffer[count + 1] == '\n') || (buffer[count] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+3] == '\n')){
             
