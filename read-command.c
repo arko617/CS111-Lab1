@@ -1,6 +1,5 @@
 // UCLA CS 111 Lab 1 command reading
 
-
 #include "command.h"
 #include "command-internals.h"
 #include "alloc.h"
@@ -118,7 +117,8 @@ int isValid(char *c)
     int par = 0; //iterators for second while loop
     int andOr = 0; //boolean to see if it is an "and-or"
     int leftPar = 0, rightPar = 0; //counters for "parentheses"
-   
+    int lineNumber = 0; //Keeps track of your line number
+
     //Make it easier to parse by removing extraneous white space
     removeWhiteSpace(c);
 
@@ -128,6 +128,10 @@ int isValid(char *c)
       fprintf(stderr, "Error: First character must be valid.\n");       
       return 0;
     }
+
+    if(c[i] == '\n')
+      lineNumber++;
+
     //Assume true until proven false
     //Check all operators except parentheses (done after this while loop)
     while(c[i] != '\0')
@@ -138,14 +142,14 @@ int isValid(char *c)
         //Check that the token is valid input
         if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n' && c[i] != '#')
         {
-          fprintf(stderr, "Error: Token must be valid.\n");
+          fprintf(stderr, "Parse Error in Line %d: Token must be valid.\n", lineNumber);
           return 0;
         }    
       
         //Check that there is no ordinary or special token immediately preceding a comment
         else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' && c[i-1] != '\n'))
         {
-          fprintf(stderr, "Error: There cannot be an ordinary token before a comment.\n");
+          fprintf(stderr, "Parse Error in Line %d: There cannot be an ordinary token before a comment.\n", lineNumber);
           return 0;
         }    
 
@@ -165,7 +169,7 @@ int isValid(char *c)
            //If previous token is special or newline, error
            if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
            {
-              fprintf(stderr, "Error: Cannot have a special token or newline before IO redirect.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before IO redirect.\n", lineNumber);
               return 0;
            }    
     
@@ -176,7 +180,7 @@ int isValid(char *c)
             //If next token is special or blank, error
            if(!isOrdinaryToken(c[sub+1]))
            {
-              fprintf(stderr, "Error: Cannot have a special token or blank after IO redirect.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or blank after IO redirect.\n", lineNumber);
               return 0;
            }    
          }
@@ -189,7 +193,7 @@ int isValid(char *c)
            //if previous token is special or newline, error
            if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
            {
-              fprintf(stderr, "Error: Cannot have a special token or newline before semicolon.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before semicolon.\n", lineNumber);
               return 0;
            }    
 
@@ -200,7 +204,7 @@ int isValid(char *c)
              sub++;
            if(isSpecialToken(c[sub+1]))
            {
-              fprintf(stderr, "Error: Cannot have a special token after semicolon.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token after semicolon.\n", lineNumber);
               return 0;
            }
         }
@@ -214,7 +218,7 @@ int isValid(char *c)
            //if previous token is special or newline, error
            if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
            {
-              fprintf(stderr, "Error: Cannot have a special token or newline before pipe.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before pipe.\n", lineNumber);
               return 0;
            }
 
@@ -227,7 +231,7 @@ int isValid(char *c)
            //Take into account that it could be ||
            if(!isOrdinaryToken(c[sub+1]) && c[sub+1] != '|')
            {
-              fprintf(stderr, "Error: Cannot have a special token that is not '|' after pipe.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token that is not '|' after pipe.\n", lineNumber);
               return 0;
            }
         }
@@ -244,14 +248,14 @@ int isValid(char *c)
       
         if(!isOrdinaryToken(c[sub+1]))
         {
-            fprintf(stderr, "Error: Cannot have a special token after OR.\n");
+            fprintf(stderr, "Parse Error in Line %d: Cannot have a special token after OR.\n", lineNumber);
             return 0;
         }
       }
 
       else if(c[i] == '&' && c[i+1] != '&')
       {
-         fprintf(stderr, "Error: Must have two consecutive '&' for a valid AND command.");
+         fprintf(stderr, "Parse Error in Line %d: Must have two consecutive '&' for a valid AND command.", lineNumber);
          return 0;
       }
 
@@ -266,7 +270,7 @@ int isValid(char *c)
          //If the previous token is a newline or a special token, error
          if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
           {
-              fprintf(stderr, "Error: Cannot have a special token or newline before and-or.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before and-or.\n", lineNumber);
               return 0;
           }
 
@@ -280,7 +284,7 @@ int isValid(char *c)
          //If the next token is a special token or blank, error
          if(!isOrdinaryToken(c[sub+2])) 
          {
-              fprintf(stderr, "Error: Cannot have a special token or blank after and-or.\n");
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or blank after and-or.\n", lineNumber);
               return 0;
         }
      }
@@ -306,7 +310,7 @@ int isValid(char *c)
   //If different number of left and right parentheses, error
   if(leftPar != rightPar)
   {
-    fprintf(stderr, "Error: Number of left and right parentheses have to match.\n");
+    fprintf(stderr, "Number of left and right parentheses have to match.\n");
      return 0;
   }
 
