@@ -12,12 +12,6 @@
 
 #define STACK_MAX 100
 
-/* FIXME: You may need to add #include directives, macro definitions,
-   static function definitions, etc.  */
-
-/* FIXME: Define the type 'struct command_stream' here.  This should
-   complete the incomplete type declaration in command.h.  */
-
 // Stack implementation reference to:
 // http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 struct Stack
@@ -738,13 +732,6 @@ command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
          void *get_next_byte_argument)
 {
-  /* FIXME: Replace this with your implementation.  You may need to
-     add auxiliary functions and otherwise modify the source code.
-     You can also use external functions defined in the GNU C Library.  */
-
-    //Produce a linked list of command trees, used as input to read_command_stream
-    //Precedence from lowest to highest: ';' < '&&' == '||' < '|'
-
       int size = 2000;  //Arbitrary initial size
       char *buffer = (char*) malloc(sizeof(char) * size); //Dynamically allocated array
       char c; //Input character
@@ -839,11 +826,8 @@ make_command_stream (int (*get_next_byte) (void *),
           count++;
         }
             
-
         //Command trees are separated by 2 or more newlines
             temp_buffer[len] = '\0';
-
-            //printf("New command tree created\n");
 
             if(stream == NULL && follower == NULL){
               stream = (command_stream_t)malloc(sizeof(struct command_stream));
@@ -886,14 +870,6 @@ make_command_stream (int (*get_next_byte) (void *),
 command_t
 read_command_stream (command_stream_t s)
 {
-  /* FIXME: Replace this with your implementation too.  */
-  //  if (s.make_command_stream(!isWord(
-  
-  //int i;
-  //Returns the root command of command tree every time read_command stream is called, and then advance to the next linked list node
-
-  //Make sure not to go out of bounds
-
   if(s != NULL && s->read == 0){
     command_t tree;
     tree = s->root;
@@ -908,7 +884,4 @@ read_command_stream (command_stream_t s)
   else{
     return NULL;
   }
-
-  //error (1, 0, "command reading not yet implemented");
-  //return 0;
 }
