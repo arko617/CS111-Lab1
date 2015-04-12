@@ -652,7 +652,7 @@ command_t make_command_tree (char *c) {
     }
 
     // For INPUTS
-    else if(c[i] == '<'){
+    else if(c[i] == '>'){
 
       i++;
       while(!isOrdinaryToken(c[i])){
@@ -677,7 +677,7 @@ command_t make_command_tree (char *c) {
 
 
     // For OUTPUTS
-    else if(c[i] == '>'){
+    else if(c[i] == '<'){
 
       i++;
       while(!isOrdinaryToken(c[i])){
