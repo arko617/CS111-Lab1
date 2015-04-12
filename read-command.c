@@ -831,7 +831,7 @@ make_command_stream (int (*get_next_byte) (void *),
         //Command trees are separated by 2 or more newlines
             temp_buffer[len] = '\0';
             
-            printf("New command tree created\n");
+            //printf("New command tree created\n");
 
             if(stream == NULL && follower == NULL){
               stream = (command_stream_t)malloc(sizeof(struct command_stream));
