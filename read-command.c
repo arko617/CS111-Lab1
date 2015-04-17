@@ -16,77 +16,77 @@
 // http://groups.csail.mit.edu/graphics/classes/6.837/F04/cpp_notes/stack1.html
 struct Stack
 {
-    command_t data[STACK_MAX];
-    int size;
-};
+    command_t data[STACK_MAX];
+    int size;
+};
 
 
 void Stack_Init(struct Stack *S)
 {
-    S->size = 0;
+    S->size = 0;
 }
 
 
 command_t Stack_Top(struct Stack *S)
 {
     if (S->size == 0) {
-        fprintf(stderr, "Error: stack empty\n");
-        exit(0);
+        fprintf(stderr, "Error: stack empty\n");
+        exit(0);
     } 
 
-    return S->data[S->size-1];
+    return S->data[S->size-1];
 }
 
 
 void Stack_Push(struct Stack *S, command_t c)
 {
     if (S->size < STACK_MAX){
-        S->data[S->size] = c;
-        S->size++;
+        S->data[S->size] = c;
+        S->size++;
     }
         
     else
-        fprintf(stderr, "Error: stack full\n");
+        fprintf(stderr, "Error: stack full\n");
 }
 
 
 void Stack_Pop(struct Stack *S)
 {
     if (S->size == 0)
-        fprintf(stderr, "Error: stack empty\n");
+        fprintf(stderr, "Error: stack empty\n");
     else
-        S->size--;
+        S->size--;
 }
 
 void removeWhiteSpace(char *c)
 {
-    int i, curr;
-    char *temp, *tab, *first;
+    int i, curr;
+    char *temp, *tab, *first;
 
     //Replace tab characters with spaces
-    for(i = 0, tab = c; tab[i] != '\0'; i++)
+    for(i = 0, tab = c; tab[i] != '\0'; i++)
     {
         if(tab[i] == '\t')
-          tab[i] = ' ';
+          tab[i] = ' ';
     }
 
     //First character must always be an operand
-    first = c;
+    first = c;
     while(first[0] == ' ' || first[0] == '\n') 
     {
-        for(i = 0; first[i] != '\0'; i++)
-           first[i] = first[i+1];
+        for(i = 0; first[i] != '\0'; i++)
+           first[i] = first[i+1];
     }
 
 
-    for(i = 0; c[i] != '\0' ; i++)
+    for(i = 0; c[i] != '\0' ; i++)
     {
         //Remove white spaces if more than one space
         while (c[i] == ' ' && c[i+1] == ' ')
        {
            //Move everything back one element if there is a space character
-           for(curr = i, temp = c; temp[curr] != '\0'; curr++)
-             temp[curr] = temp[curr+1];
+           for(curr = i, temp = c; temp[curr] != '\0'; curr++)
+             temp[curr] = temp[curr+1];
        } 
     }
 }
@@ -95,111 +95,111 @@ void removeWhiteSpace(char *c)
 int isOrdinaryToken(const char c)
 {
     return (isalpha(c) || isdigit(c) || c == '!' || c == '%' || c == '+' || c == ',' || c == '-' || c == '.' || c == '/' || c == ':' 
-            || c == '@' || c == '^' || c == '_');
+            || c == '@' || c == '^' || c == '_');
 }
 
 int isSpecialToken(const char c)
 {
-  return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || 
-    c == '>' || c == '&');
+  return (c == ';' || c == '|' || c == '(' || c == ')' || c == '<' || 
+    c == '>' || c == '&');
 }
 
 //Check entire buffer
 int isValid(char *c)
 {
-    int i = 0, sub; //iterators for first while loop
-    int par = 0; //iterators for second while loop
-    int andOr = 0; //boolean to see if it is an "and-or"
-    int leftPar = 0, rightPar = 0; //counters for "parentheses"
-    int lineNumber = 0; //Keeps track of your line number
+    int i = 0, sub; //iterators for first while loop
+    int par = 0; //iterators for second while loop
+    int andOr = 0; //boolean to see if it is an "and-or"
+    int leftPar = 0, rightPar = 0; //counters for "parentheses"
+    int lineNumber = 0; //Keeps track of your line number
 
     //Make it easier to parse by removing extraneous white space
-    removeWhiteSpace(c);
+    removeWhiteSpace(c);
 
     //First character must be an ordinary token, left parentheses, or start of a comment 
     if(!isOrdinaryToken(c[0]) && c[0] != '(' && c[0] != '#')
     {
-      fprintf(stderr, "Error: First character must be valid.\n");       
-      return 0;
+      fprintf(stderr, "Error: First character must be valid.\n");       
+      return 0;
     }
 
     if(c[i] == '\n')
-      lineNumber++;
+      lineNumber++;
 
     //Assume true until proven false
     //Check all operators except parentheses (done after this while loop)
     while(c[i] != '\0')
     {
-        andOr = 0;
-        sub = i; //To perform subchecks without modifying the "i" iterator
+        andOr = 0;
+        sub = i; //To perform subchecks without modifying the "i" iterator
       
         //Check that the token is valid input
         if(!isOrdinaryToken(c[i]) && !isSpecialToken(c[i]) && c[i] != ' ' && c[i] != '\n' && c[i] != '#')
         {
-          fprintf(stderr, "Parse Error in Line %d: Token must be valid.\n", lineNumber);
-          return 0;
+          fprintf(stderr, "Parse Error in Line %d: Token must be valid.\n", lineNumber);
+          return 0;
         }    
       
         //Check that there is no ordinary or special token immediately preceding a comment
         else if(i != 0 && c[i] == '#' && (c[i-1] != ' ' && c[i-1] != '\n'))
         {
-          fprintf(stderr, "Parse Error in Line %d: There cannot be an ordinary token before a comment.\n", lineNumber);
-          return 0;
+          fprintf(stderr, "Parse Error in Line %d: There cannot be an ordinary token before a comment.\n", lineNumber);
+          return 0;
         }    
 
         //If you encounter a comment, you can skip through until you encounter a newline
         else if(c[i] == '#')
         {
           while(c[i] != '\n' && c[i] != '\0')
-            i++;
-          continue;
+            i++;
+          continue;
         }
 
         //Check that < and > have valid tokens on either side
         else if(c[i] == '<' || c[i] == '>')
         {
            while(c[sub-1] == ' ')
-             sub--;
+             sub--;
            //If previous token is special or newline, error
            if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
            {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before IO redirect.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before IO redirect.\n", lineNumber);
+              return 0;
            }    
     
-            sub = i; //Reset sub
+            sub = i; //Reset sub
             while(c[sub+1] == '\n' || c[sub+1] == ' ')
-               sub++;
+               sub++;
     
             //If next token is special or blank, error
            if(!isOrdinaryToken(c[sub+1]))
            {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or blank after IO redirect.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or blank after IO redirect.\n", lineNumber);
+              return 0;
            }    
          }
 
-          //Check that ; has valid tokens on AT LEAST the left side
-        else if(c[i] == ';')
+          //Check that ; has valid tokens on AT LEAST the left side
+        else if(c[i] == ';')
         {
            while(c[sub-1] == ' ')
-             sub--;
+             sub--;
            //if previous token is special or newline, error
            if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
            {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before semicolon.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before semicolon.\n", lineNumber);
+              return 0;
            }    
 
-           sub = i; //Reset sub
+           sub = i; //Reset sub
 
            //If next non-space or non-newline is an operator, error
            while(c[sub+1] == '\n' || c[sub+1] == ' ')
-             sub++;
+             sub++;
            if(isSpecialToken(c[sub+1]))
            {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token after semicolon.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token after semicolon.\n", lineNumber);
+              return 0;
            }
         }
 
@@ -207,26 +207,26 @@ int isValid(char *c)
         else if(c[i] == '|')
         {
            while(c[sub-1] == ' ')
-             sub--;
+             sub--;
 
            //if previous token is special or newline, error
            if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
            {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before pipe.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before pipe.\n", lineNumber);
+              return 0;
            }
 
-           sub = i; //Reset sub
+           sub = i; //Reset sub
 
            //If next non-space or non-newline is an operator or blank, error
            while(c[sub+1] == '\n' || c[sub+1] == ' ')
-             sub++;
+             sub++;
 
            //Take into account that it could be ||
            if(!isOrdinaryToken(c[sub+1]) && c[sub+1] != '|')
            {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token that is not '|' after pipe.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token that is not '|' after pipe.\n", lineNumber);
+              return 0;
            }
         }
 
@@ -234,277 +234,277 @@ int isValid(char *c)
       //Regular if statement because we would have entered the conditional that checks for pipes
       if(c[i]=='|' && c[i+1]!='|')
       {
-        sub = i;  //Reset sub
+        sub = i;  //Reset sub
 
         //If next non-space or non-newline is an operator or blank, error
         while(c[sub+1] == '\n' || c[sub+1] == ' ')
-          sub++;
+          sub++;
       
         if(!isOrdinaryToken(c[sub+1]))
         {
-            fprintf(stderr, "Parse Error in Line %d: Cannot have a special token after OR.\n", lineNumber);
-            return 0;
+            fprintf(stderr, "Parse Error in Line %d: Cannot have a special token after OR.\n", lineNumber);
+            return 0;
         }
       }
 
       else if(c[i] == '&' && c[i+1] != '&')
       {
-         fprintf(stderr, "Parse Error in Line %d: Must have two consecutive '&' for a valid AND command.", lineNumber);
-         return 0;
+         fprintf(stderr, "Parse Error in Line %d: Must have two consecutive '&' for a valid AND command.", lineNumber);
+         return 0;
       }
 
       //Check that and-ors have an appropriate lhs and rhs
       if((c[i] == '&' && c[i+1] == '&') || (c[i] == '|' && c[i+1] == '|'))
       {
-         andOr = 1;
+         andOr = 1;
 
          while(c[sub-1] == ' ')
-            sub--;
+            sub--;
 
          //If the previous token is a newline or a special token, error
          if(c[sub-1] == '\n' || isSpecialToken(c[sub-1]))
           {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before and-or.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or newline before and-or.\n", lineNumber);
+              return 0;
           }
 
-         sub = i; //Reset sub
+         sub = i; //Reset sub
 
          //Jump an extra element because the special operator is 2 digits
          //If next non-space or non-newline is an operator, error
          while(c[sub+2] == '\n' || c[sub+2] == ' ')
-            sub++;
+            sub++;
 
          //If the next token is a special token or blank, error
          if(!isOrdinaryToken(c[sub+2])) 
          {
-              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or blank after and-or.\n", lineNumber);
-              return 0;
+              fprintf(stderr, "Parse Error in Line %d: Cannot have a special token or blank after and-or.\n", lineNumber);
+              return 0;
         }
      }
 
       if(andOr)
-         i += 2;
+         i += 2;
 
       else
-         i++;
+         i++;
   }
 
   while(c[par] != '\0')
   {
       if(c[par] == '(')
-        leftPar++;
+        leftPar++;
 
       else if(c[par] == ')')
-        rightPar++;
+        rightPar++;
 
-      par++;
+      par++;
   }
 
   //If different number of left and right parentheses, error
   if(leftPar != rightPar)
   {
-    fprintf(stderr, "Number of left and right parentheses have to match.\n");
-     return 0;
+    fprintf(stderr, "Number of left and right parentheses have to match.\n");
+     return 0;
   }
 
-  return 1;
+  return 1;
 }
 
 
 //Acts as the linked list for our command tree
 struct command_stream {
-  int read; //boolean to tell you if stream is read or not
-  command_t root;
-  command_stream_t next;
-  command_stream_t prev;
-};
+  int read; //boolean to tell you if stream is read or not
+  command_t root;
+  command_stream_t next;
+  command_stream_t prev;
+};
 
 
 // Each COMMAND TREE creator
 command_t make_command_tree (char *c) {
-  struct Stack cmdStack;
-  struct Stack oprStack;
+  struct Stack cmdStack;
+  struct Stack oprStack;
 
-  Stack_Init(&cmdStack);
-  Stack_Init(&oprStack);
+  Stack_Init(&cmdStack);
+  Stack_Init(&oprStack);
  
   // Keep iterating through the entire buffer given
-  int i = 0;
+  int i = 0;
   while(c[i] != '\0'){
 
     // Don't forget to allocate memory for command
-    command_t x;
-    x = (command_t)malloc(sizeof(struct command));
+    command_t x;
+    x = (command_t)malloc(sizeof(struct command));
 
     // For ordinary token and creation of SIMPLE commands
     if(isOrdinaryToken(c[i])){
-      x->type = SIMPLE_COMMAND;
-      int count = 0;
-      x->u.word = (char**)malloc(sizeof(char*) * 100);
+      x->type = SIMPLE_COMMAND;
+      int count = 0;
+      x->u.word = (char**)malloc(sizeof(char*) * 100);
       
       //Allocate space for each element of the double pointer
-      int j = 0;
+      int j = 0;
       while(j < 100){
-        x->u.word[j] = (char*)malloc(sizeof(char) * 100);
-        j++;
+        x->u.word[j] = (char*)malloc(sizeof(char) * 100);
+        j++;
       }
       
       while(isOrdinaryToken(c[i]) || c[i] == ' '){
         
-        int len = 0;
+        int len = 0;
 
         //Set ordinary tokens
         while(isOrdinaryToken(c[i])){
-          x->u.word[count][len] = c[i];
-          len++;
-          i++;
+          x->u.word[count][len] = c[i];
+          len++;
+          i++;
         }
 
         //Put a zero byte to signal end of a file
         if(len > 0){
-          x->u.word[count][len] = '\0';
-          count++;
+          x->u.word[count][len] = '\0';
+          count++;
         }
 
         if(c[i] == ' '){
-          i++;
+          i++;
         }
       }
 
-      x->u.word[count] = '\0';
-      Stack_Push(&cmdStack, x);      
+      x->u.word[count] = '\0';
+      Stack_Push(&cmdStack, x);      
     }   
 
     // For PIPELINE commands
     else if(c[i] == '|' && c[i+1] != '|'){
 
-      x->type = PIPE_COMMAND;
+      x->type = PIPE_COMMAND;
 
 //Assign operators and pop off stack when assignment is finished
       while(oprStack.size != 0 && Stack_Top(&oprStack)->type == PIPE_COMMAND){
-        command_t oprTemp = Stack_Top(&oprStack);
-        Stack_Pop(&oprStack);
+        command_t oprTemp = Stack_Top(&oprStack);
+        Stack_Pop(&oprStack);
 
-        command_t cmdTemp1 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
-        command_t cmdTemp2 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
+        command_t cmdTemp1 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
+        command_t cmdTemp2 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
 
-        oprTemp->u.command[0] = cmdTemp2;
-        oprTemp->u.command[1] = cmdTemp1;
+        oprTemp->u.command[0] = cmdTemp2;
+        oprTemp->u.command[1] = cmdTemp1;
 
-        Stack_Push(&cmdStack, oprTemp);
+        Stack_Push(&cmdStack, oprTemp);
       }
 
-      Stack_Push(&oprStack, x);
-      i++;
+      Stack_Push(&oprStack, x);
+      i++;
     }
 
     // For OR Commands
     else if(c[i] == '|' && c[i+1] == '|'){
-      x->type = OR_COMMAND;
+      x->type = OR_COMMAND;
 
       while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND)){
-        command_t oprTemp = Stack_Top(&oprStack);
-        Stack_Pop(&oprStack);
+        command_t oprTemp = Stack_Top(&oprStack);
+        Stack_Pop(&oprStack);
 
-        command_t cmdTemp1 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
-        command_t cmdTemp2 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
+        command_t cmdTemp1 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
+        command_t cmdTemp2 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
 
-        oprTemp->u.command[0] = cmdTemp2;
-        oprTemp->u.command[1] = cmdTemp1;
+        oprTemp->u.command[0] = cmdTemp2;
+        oprTemp->u.command[1] = cmdTemp1;
 
-        Stack_Push(&cmdStack, oprTemp);
+        Stack_Push(&cmdStack, oprTemp);
       }
 
-      Stack_Push(&oprStack, x);
+      Stack_Push(&oprStack, x);
       //Skip 2 elements since OR has two digits
-      i+=2;
+      i+=2;
     }
 
     // For AND Commands
     else if(c[i] == '&'){
-      x->type = AND_COMMAND;
+      x->type = AND_COMMAND;
 
       while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND)){
-        command_t oprTemp = Stack_Top(&oprStack);
-        Stack_Pop(&oprStack);
+        command_t oprTemp = Stack_Top(&oprStack);
+        Stack_Pop(&oprStack);
 
-        command_t cmdTemp1 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
-        command_t cmdTemp2 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
+        command_t cmdTemp1 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
+        command_t cmdTemp2 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
 
-        oprTemp->u.command[0] = cmdTemp2;
-        oprTemp->u.command[1] = cmdTemp1;
+        oprTemp->u.command[0] = cmdTemp2;
+        oprTemp->u.command[1] = cmdTemp1;
 
-        Stack_Push(&cmdStack, oprTemp);
+        Stack_Push(&cmdStack, oprTemp);
       }
 
       //Skip 2 elements since AND has two digits
-      Stack_Push(&oprStack, x);
-      i+=2;
+      Stack_Push(&oprStack, x);
+      i+=2;
     }
 
     // For SEQUENCE commands
     //Condition if there is a space after the semicolon
-    else if(c[i] == ';'){
+    else if(c[i] == ';'){
 
       if(c[i+1] != '\0'){
 
         if(c[i+1] == ' '){
           if(c[i+2] != '\0'){
 
-            x->type = SEQUENCE_COMMAND;
+            x->type = SEQUENCE_COMMAND;
 
               while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND || Stack_Top(&oprStack)->type == SEQUENCE_COMMAND)){
-                command_t oprTemp = Stack_Top(&oprStack);
-                Stack_Pop(&oprStack);
+                command_t oprTemp = Stack_Top(&oprStack);
+                Stack_Pop(&oprStack);
 
-                command_t cmdTemp1 = Stack_Top(&cmdStack);
-                Stack_Pop(&cmdStack);
-                command_t cmdTemp2 = Stack_Top(&cmdStack);
-                Stack_Pop(&cmdStack);
+                command_t cmdTemp1 = Stack_Top(&cmdStack);
+                Stack_Pop(&cmdStack);
+                command_t cmdTemp2 = Stack_Top(&cmdStack);
+                Stack_Pop(&cmdStack);
 
-                oprTemp->u.command[0] = cmdTemp2;
-                oprTemp->u.command[1] = cmdTemp1;
+                oprTemp->u.command[0] = cmdTemp2;
+                oprTemp->u.command[1] = cmdTemp1;
 
-                Stack_Push(&cmdStack, oprTemp);
+                Stack_Push(&cmdStack, oprTemp);
               } 
 
-             Stack_Push(&oprStack, x);
+             Stack_Push(&oprStack, x);
           }
         }
 
         //No space immediately after
         else{
 
-          x->type = SEQUENCE_COMMAND;
+          x->type = SEQUENCE_COMMAND;
 
             while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND || Stack_Top(&oprStack)->type == SEQUENCE_COMMAND)){
-            command_t oprTemp = Stack_Top(&oprStack);
-            Stack_Pop(&oprStack);
+            command_t oprTemp = Stack_Top(&oprStack);
+            Stack_Pop(&oprStack);
 
-            command_t cmdTemp1 = Stack_Top(&cmdStack);
-            Stack_Pop(&cmdStack);
-            command_t cmdTemp2 = Stack_Top(&cmdStack);
-            Stack_Pop(&cmdStack);
+            command_t cmdTemp1 = Stack_Top(&cmdStack);
+            Stack_Pop(&cmdStack);
+            command_t cmdTemp2 = Stack_Top(&cmdStack);
+            Stack_Pop(&cmdStack);
 
-            oprTemp->u.command[0] = cmdTemp2;
-            oprTemp->u.command[1] = cmdTemp1;
+            oprTemp->u.command[0] = cmdTemp2;
+            oprTemp->u.command[1] = cmdTemp1;
 
-            Stack_Push(&cmdStack, oprTemp);
+            Stack_Push(&cmdStack, oprTemp);
             } 
 
-          Stack_Push(&oprStack, x);
+          Stack_Push(&oprStack, x);
         }
         
       }
 
-      i++;
+      i++;
 
     }
 
@@ -518,24 +518,24 @@ command_t make_command_tree (char *c) {
 
           if(c[i+2] != '\0' && !isSpecialToken(c[i-2])){
 
-            x->type = SEQUENCE_COMMAND;
+            x->type = SEQUENCE_COMMAND;
 
               while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND || Stack_Top(&oprStack)->type == SEQUENCE_COMMAND)){
-                command_t oprTemp = Stack_Top(&oprStack);
-                Stack_Pop(&oprStack);
+                command_t oprTemp = Stack_Top(&oprStack);
+                Stack_Pop(&oprStack);
 
-                command_t cmdTemp1 = Stack_Top(&cmdStack);
-                Stack_Pop(&cmdStack);
-                command_t cmdTemp2 = Stack_Top(&cmdStack);
-                Stack_Pop(&cmdStack);
+                command_t cmdTemp1 = Stack_Top(&cmdStack);
+                Stack_Pop(&cmdStack);
+                command_t cmdTemp2 = Stack_Top(&cmdStack);
+                Stack_Pop(&cmdStack);
 
-                oprTemp->u.command[0] = cmdTemp2;
-                oprTemp->u.command[1] = cmdTemp1;
+                oprTemp->u.command[0] = cmdTemp2;
+                oprTemp->u.command[1] = cmdTemp1;
 
-                Stack_Push(&cmdStack, oprTemp);
+                Stack_Push(&cmdStack, oprTemp);
               } 
 
-             Stack_Push(&oprStack, x);
+             Stack_Push(&oprStack, x);
           }
         }
 
@@ -543,24 +543,24 @@ command_t make_command_tree (char *c) {
 
           if(c[i+2] != '\0'){
 
-            x->type = SEQUENCE_COMMAND;
+            x->type = SEQUENCE_COMMAND;
 
               while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND || Stack_Top(&oprStack)->type == SEQUENCE_COMMAND)){
-              command_t oprTemp = Stack_Top(&oprStack);
-              Stack_Pop(&oprStack);
+              command_t oprTemp = Stack_Top(&oprStack);
+              Stack_Pop(&oprStack);
 
-              command_t cmdTemp1 = Stack_Top(&cmdStack);
-              Stack_Pop(&cmdStack);
-              command_t cmdTemp2 = Stack_Top(&cmdStack);
-              Stack_Pop(&cmdStack);
+              command_t cmdTemp1 = Stack_Top(&cmdStack);
+              Stack_Pop(&cmdStack);
+              command_t cmdTemp2 = Stack_Top(&cmdStack);
+              Stack_Pop(&cmdStack);
 
-              oprTemp->u.command[0] = cmdTemp2;
-              oprTemp->u.command[1] = cmdTemp1;
+              oprTemp->u.command[0] = cmdTemp2;
+              oprTemp->u.command[1] = cmdTemp1;
 
-              Stack_Push(&cmdStack, oprTemp);
+              Stack_Push(&cmdStack, oprTemp);
               } 
 
-            Stack_Push(&oprStack, x);
+            Stack_Push(&oprStack, x);
           }
           
         }
@@ -570,24 +570,24 @@ command_t make_command_tree (char *c) {
 
           if(!isSpecialToken(c[i-2])){
 
-            x->type = SEQUENCE_COMMAND;
+            x->type = SEQUENCE_COMMAND;
 
               while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND || Stack_Top(&oprStack)->type == SEQUENCE_COMMAND)){
-              command_t oprTemp = Stack_Top(&oprStack);
-              Stack_Pop(&oprStack);
+              command_t oprTemp = Stack_Top(&oprStack);
+              Stack_Pop(&oprStack);
 
-              command_t cmdTemp1 = Stack_Top(&cmdStack);
-              Stack_Pop(&cmdStack);
-              command_t cmdTemp2 = Stack_Top(&cmdStack);
-              Stack_Pop(&cmdStack);
+              command_t cmdTemp1 = Stack_Top(&cmdStack);
+              Stack_Pop(&cmdStack);
+              command_t cmdTemp2 = Stack_Top(&cmdStack);
+              Stack_Pop(&cmdStack);
 
-              oprTemp->u.command[0] = cmdTemp2;
-              oprTemp->u.command[1] = cmdTemp1;
+              oprTemp->u.command[0] = cmdTemp2;
+              oprTemp->u.command[1] = cmdTemp1;
 
-              Stack_Push(&cmdStack, oprTemp);
+              Stack_Push(&cmdStack, oprTemp);
               } 
 
-            Stack_Push(&oprStack, x);
+            Stack_Push(&oprStack, x);
           }
           
         }
@@ -595,145 +595,145 @@ command_t make_command_tree (char *c) {
 
         else{
 
-          x->type = SEQUENCE_COMMAND;
+          x->type = SEQUENCE_COMMAND;
 
               while(oprStack.size != 0 && (Stack_Top(&oprStack)->type == PIPE_COMMAND || Stack_Top(&oprStack)->type == OR_COMMAND || Stack_Top(&oprStack)->type == AND_COMMAND || Stack_Top(&oprStack)->type == SEQUENCE_COMMAND)){
-              command_t oprTemp = Stack_Top(&oprStack);
-              Stack_Pop(&oprStack);
+              command_t oprTemp = Stack_Top(&oprStack);
+              Stack_Pop(&oprStack);
 
-              command_t cmdTemp1 = Stack_Top(&cmdStack);
-              Stack_Pop(&cmdStack);
-              command_t cmdTemp2 = Stack_Top(&cmdStack);
-              Stack_Pop(&cmdStack);
+              command_t cmdTemp1 = Stack_Top(&cmdStack);
+              Stack_Pop(&cmdStack);
+              command_t cmdTemp2 = Stack_Top(&cmdStack);
+              Stack_Pop(&cmdStack);
 
-              oprTemp->u.command[0] = cmdTemp2;
-              oprTemp->u.command[1] = cmdTemp1;
+              oprTemp->u.command[0] = cmdTemp2;
+              oprTemp->u.command[1] = cmdTemp1;
 
-              Stack_Push(&cmdStack, oprTemp);
+              Stack_Push(&cmdStack, oprTemp);
               } 
 
-            Stack_Push(&oprStack, x);
+            Stack_Push(&oprStack, x);
         }
 
 
       }
 
-      i++;
+      i++;
 
     }
 
 
     // For beginning parenthesis leading to SUBSHELL commands
     else if(c[i] == '('){
-      x->type = SUBSHELL_COMMAND;
-      Stack_Push(&oprStack, x);
-      i++;
+      x->type = SUBSHELL_COMMAND;
+      Stack_Push(&oprStack, x);
+      i++;
     }
 
     // For ending parenthesis taking care of the creation of SUBSHELL commands
     else if(c[i] == ')'){ 
       while(Stack_Top(&oprStack)->type != SUBSHELL_COMMAND){
-        command_t oprTemp = Stack_Top(&oprStack);
-        Stack_Pop(&oprStack);
+        command_t oprTemp = Stack_Top(&oprStack);
+        Stack_Pop(&oprStack);
 
-        command_t cmdTemp1 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
-        command_t cmdTemp2 = Stack_Top(&cmdStack);
-        Stack_Pop(&cmdStack);
+        command_t cmdTemp1 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
+        command_t cmdTemp2 = Stack_Top(&cmdStack);
+        Stack_Pop(&cmdStack);
 
-        oprTemp->u.command[0] = cmdTemp2;
-        oprTemp->u.command[1] = cmdTemp1;
+        oprTemp->u.command[0] = cmdTemp2;
+        oprTemp->u.command[1] = cmdTemp1;
 
-        Stack_Push(&cmdStack, oprTemp);
+        Stack_Push(&cmdStack, oprTemp);
       }
 
-      command_t oprTemp = Stack_Top(&oprStack);
-      Stack_Pop(&oprStack);
+      command_t oprTemp = Stack_Top(&oprStack);
+      Stack_Pop(&oprStack);
 
-      command_t cmdTemp = Stack_Top(&cmdStack);
-      Stack_Pop(&cmdStack);
+      command_t cmdTemp = Stack_Top(&cmdStack);
+      Stack_Pop(&cmdStack);
 
-      oprTemp->u.subshell_command = cmdTemp;
-      Stack_Push(&cmdStack, oprTemp);
-      i++;
+      oprTemp->u.subshell_command = cmdTemp;
+      Stack_Push(&cmdStack, oprTemp);
+      i++;
     }
 
     // For INPUTS
     else if(c[i] == '>'){
 
-      i++;
+      i++;
       while(!isOrdinaryToken(c[i])){
-        i++;
+        i++;
       }
 
-      command_t cmdTemp = Stack_Top(&cmdStack);
-      Stack_Pop(&cmdStack);
+      command_t cmdTemp = Stack_Top(&cmdStack);
+      Stack_Pop(&cmdStack);
 
-      cmdTemp->output = (char*)malloc(sizeof(char) * 100);
+      cmdTemp->output = (char*)malloc(sizeof(char) * 100);
         
-      int len = 0;
+      int len = 0;
       while(isOrdinaryToken(c[i])){
-        cmdTemp->output[len] = c[i];
-        len++;
-        i++;  
+        cmdTemp->output[len] = c[i];
+        len++;
+        i++;  
       }
 
-      cmdTemp->output[len] = '\0';
-      Stack_Push(&cmdStack, cmdTemp);   
+      cmdTemp->output[len] = '\0';
+      Stack_Push(&cmdStack, cmdTemp);   
     } 
 
 
     // For OUTPUTS
     else if(c[i] == '<'){
 
-      i++;
+      i++;
       while(!isOrdinaryToken(c[i])){
-        i++;
+        i++;
       }
 
-      command_t cmdTemp = Stack_Top(&cmdStack);
-      Stack_Pop(&cmdStack);
+      command_t cmdTemp = Stack_Top(&cmdStack);
+      Stack_Pop(&cmdStack);
 
-      cmdTemp->input = (char*)malloc(sizeof(char) * 100);
+      cmdTemp->input = (char*)malloc(sizeof(char) * 100);
         
-      int len = 0;
+      int len = 0;
       while(isOrdinaryToken(c[i])){
-        cmdTemp->input[len] = c[i];
-        len++;
-        i++;  
+        cmdTemp->input[len] = c[i];
+        len++;
+        i++;  
       }
 
-      cmdTemp->input[len] = '\0';
-      Stack_Push(&cmdStack, cmdTemp);            
+      cmdTemp->input[len] = '\0';
+      Stack_Push(&cmdStack, cmdTemp);            
     } 
 
     // For empty spaces
     else{
-      i++;
+      i++;
     }
   }
 
   // Creating the tree from whatever is left
   while(oprStack.size != 0){
-    command_t oprTemp = Stack_Top(&oprStack);
-    Stack_Pop(&oprStack);
+    command_t oprTemp = Stack_Top(&oprStack);
+    Stack_Pop(&oprStack);
 
-    command_t cmdTemp1 = Stack_Top(&cmdStack);
-    Stack_Pop(&cmdStack);
-    command_t cmdTemp2 = Stack_Top(&cmdStack);
-    Stack_Pop(&cmdStack);
+    command_t cmdTemp1 = Stack_Top(&cmdStack);
+    Stack_Pop(&cmdStack);
+    command_t cmdTemp2 = Stack_Top(&cmdStack);
+    Stack_Pop(&cmdStack);
     
-    oprTemp->u.command[0] = cmdTemp2;
-    oprTemp->u.command[1] = cmdTemp1;
-    Stack_Push(&cmdStack, oprTemp); 
+    oprTemp->u.command[0] = cmdTemp2;
+    oprTemp->u.command[1] = cmdTemp1;
+    Stack_Push(&cmdStack, oprTemp); 
   }
   
-  command_t tree = (command_t)malloc(sizeof(struct command));
-  tree = Stack_Top(&cmdStack);
+  command_t tree = (command_t)malloc(sizeof(struct command));
+  tree = Stack_Top(&cmdStack);
  
-  Stack_Pop(&cmdStack);
+  Stack_Pop(&cmdStack);
 
-  return tree;
+  return tree;
 }
 
 
@@ -741,138 +741,138 @@ command_stream_t
 make_command_stream (int (*get_next_byte) (void *),
          void *get_next_byte_argument)
 {
-      int size = 2000;  //Arbitrary initial size
-      char *buffer = (char*) malloc(sizeof(char) * size); //Dynamically allocated array
-      char c; //Input character
-      int count = 0;//Counter used for indexing in my dynamically allocated array
+      int size = 2000;  //Arbitrary initial size
+      char *buffer = (char*) malloc(sizeof(char) * size); //Dynamically allocated array
+      char c; //Input character
+      int count = 0;//Counter used for indexing in my dynamically allocated array
   
       if (buffer == NULL) //Returns an error if buffer is NULL
       {
-        fprintf(stderr, "Error when using 'buffer' malloc.");
-        exit(1);
+        fprintf(stderr, "Error when using 'buffer' malloc.");
+        exit(1);
       }
 
-      c = get_next_byte(get_next_byte_argument);
+      c = get_next_byte(get_next_byte_argument);
 
       while(c != EOF)
       {
-        buffer[count] = c;
-        count++;
+        buffer[count] = c;
+        count++;
 
         //Reallocate the size if necessary
         if(count >= size)
         {
-          buffer = (char*)realloc(buffer, size*2);
+          buffer = (char*)realloc(buffer, size*2);
 
           if(buffer == NULL)
           {
-            fprintf(stderr, "Error when using 'buffer' malloc.");
-            exit(1);   
+            fprintf(stderr, "Error when using 'buffer' malloc.");
+            exit(1);   
           }
 
-          size *= 2;//Adjust size for future reallocations
+          size *= 2;//Adjust size for future reallocations
         }
 
-        c = get_next_byte(get_next_byte_argument);
+        c = get_next_byte(get_next_byte_argument);
       }
 
-      buffer[count] = '\0';
+      buffer[count] = '\0';
 
-      removeWhiteSpace(buffer);
+      removeWhiteSpace(buffer);
       
       if(!isValid(buffer)){
-        fprintf(stderr, "Line 784: Buffer is invalid");
-        exit(1);
+        fprintf(stderr, "Line 784: Buffer is invalid");
+        exit(1);
       }
 
-      command_stream_t stream = NULL;
-      command_stream_t follower = NULL;
+      command_stream_t stream = NULL;
+      command_stream_t follower = NULL;
 
-      count = 0;
+      count = 0;
 
       while(buffer[count] != '\0'){
 
-        char *temp_buffer = (char*) malloc(sizeof(char) * size);
-        int len = 0;
+        char *temp_buffer = (char*) malloc(sizeof(char) * size);
+        int len = 0;
 
         while(buffer[count] != '\0'){ 
 
-          char temp_immediate_prev = buffer[count-1];
-          char temp_preceding = buffer[count-2];
+          char temp_immediate_prev = buffer[count-1];
+          char temp_preceding = buffer[count-2];
 
           
           if(buffer[count] == '#'){
           	while(buffer[count] != '\n'){
-          		count++;
+          		count++;
           	}
 
-          	count++;
+          	count++;
           }
 
 
           if((buffer[count] == '\n' && buffer[count + 1] == '\n') || (buffer[count] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+2] == '\n') || (buffer[count] == ' ' && buffer[count+1] == '\n' && buffer[count+3] == '\n')){
             
             while(buffer[count] == '\n' || buffer[count] == ' '){
-              count++;
+              count++;
             }
 
             if(!isSpecialToken(temp_immediate_prev)){
               if(temp_immediate_prev == ' '){
                 if(!isSpecialToken(temp_preceding)){
-                  break;
+                  break;
                 }
               }
 
               else{
-                break;
+                break;
               }
             }
 
           }
 
-          temp_buffer[len] = buffer[count];
-          len++;
-          count++;
+          temp_buffer[len] = buffer[count];
+          len++;
+          count++;
         }
             
         //Command trees are separated by 2 or more newlines
-            temp_buffer[len] = '\0';
+            temp_buffer[len] = '\0';
 
             if(stream == NULL && follower == NULL){
-              stream = (command_stream_t)malloc(sizeof(struct command_stream));
-              stream->read = 0;
-              stream->root = (command_t)malloc(sizeof(struct command));
-              stream->root = make_command_tree(temp_buffer);
-              stream->prev = NULL;
-              stream->next = NULL;
+              stream = (command_stream_t)malloc(sizeof(struct command_stream));
+              stream->read = 0;
+              stream->root = (command_t)malloc(sizeof(struct command));
+              stream->root = make_command_tree(temp_buffer);
+              stream->prev = NULL;
+              stream->next = NULL;
             }
             
             else if(stream != NULL && follower == NULL){
-              stream->next = (command_stream_t)malloc(sizeof(struct command_stream));
-              stream->next->read = 0;
-              stream->next->root = (command_t)malloc(sizeof(struct command));
-              stream->next->root = make_command_tree(temp_buffer);
-              follower = stream->next;
+              stream->next = (command_stream_t)malloc(sizeof(struct command_stream));
+              stream->next->read = 0;
+              stream->next->root = (command_t)malloc(sizeof(struct command));
+              stream->next->root = make_command_tree(temp_buffer);
+              follower = stream->next;
 
-              follower->prev = stream;
-              follower->next = NULL;
+              follower->prev = stream;
+              follower->next = NULL;
             }
 
             else{
-              command_stream_t temp = (command_stream_t)malloc(sizeof(struct command_stream));
-              temp->read = 0;
-              temp->root = (command_t)malloc(sizeof(struct command));
-              temp->root = make_command_tree(temp_buffer);
+              command_stream_t temp = (command_stream_t)malloc(sizeof(struct command_stream));
+              temp->read = 0;
+              temp->root = (command_t)malloc(sizeof(struct command));
+              temp->root = make_command_tree(temp_buffer);
 
-              follower->next = temp;
-              temp->prev = follower;
-              temp->next = NULL;
-              follower = follower->next;
+              follower->next = temp;
+              temp->prev = follower;
+              temp->next = NULL;
+              follower = follower->next;
             }
 
         }
 
-    return stream;
+    return stream;
 }
 
 
@@ -880,17 +880,17 @@ command_t
 read_command_stream (command_stream_t s)
 {
   if(s != NULL && s->read == 0){
-    command_t tree;
-    tree = s->root;
-    s->read++;
-    return tree;
+    command_t tree;
+    tree = s->root;
+    s->read++;
+    return tree;
   }
 
   else if(s != NULL && s->next != NULL){
-    return read_command_stream(s->next);
+    return read_command_stream(s->next);
   }
 
   else{
-    return NULL;
+    return NULL;
   }
 }
