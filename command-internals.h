@@ -22,7 +22,6 @@ struct command
   char *input;
   char *output;
   char *clobber_output;
-  char *error;
 
   // I/O duplicate, or null if none.
   char *input_dup;
